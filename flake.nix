@@ -58,7 +58,34 @@
           };
         }
       );
+
       homeManagerModules.default = import ./modules/home-manager.nix { inherit self; };
+
+      checks = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          lint = pkgs.buildNpmPackage {
+            pname = "git-hooks-lint";
+            version = "0.1.0";
+            src = ./.;
+            npmDepsHash = "sha256-k8p4HcjeFRdhz+hy5D9qBJmwJPQVowzLyf5NHITW6hg=";
+            dontNpmBuild = true;
+            buildPhase = ''
+              runHook preBuild
+              npm run lint
+              runHook postBuild
+            '';
+            installPhase = ''
+              runHook preInstall
+              touch $out
+              runHook postInstall
+            '';
+          };
+        }
+      );
     };
 
   nixConfig = {
