@@ -3,6 +3,10 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -10,40 +14,28 @@
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      treefmt-nix,
-    }:
-    let
-      supportedSystems = [
+    inputs@{ flake-parts, self, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [
         "aarch64-darwin"
         "aarch64-linux"
         "x86_64-darwin"
         "x86_64-linux"
       ];
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-      treefmtEval = forAllSystems (
-        system:
-        treefmt-nix.lib.evalModule nixpkgs.legacyPackages.${system} {
-          projectRootFile = "flake.nix";
-          programs = {
-            deadnix.enable = true;
-            nixfmt.enable = true;
-            shellcheck.enable = true;
-            shfmt.enable = true;
-          };
-        }
-      );
-    in
-    {
-      packages = forAllSystems (
-        system:
+
+      imports = [ inputs.treefmt-nix.flakeModule ];
+
+      flake = {
+        homeManagerModules.default = import ./modules/home-manager.nix { inherit self; };
+      };
+
+      perSystem =
+        { pkgs, ... }:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
+          nodejs = pkgs.nodejs;
         in
         {
-          default = pkgs.buildNpmPackage {
+          packages.default = pkgs.buildNpmPackage {
             pname = "git-hooks";
             version = "0.1.0";
 
@@ -70,28 +62,25 @@
               runHook postInstall
             '';
 
-            meta = with pkgs.lib; {
+            meta = {
               description = "Git hooks collection with commitlint";
               homepage = "https://github.com/ncaq/git-hooks";
-              license = licenses.asl20;
+              license = pkgs.lib.licenses.asl20;
               maintainers = [ ];
             };
           };
-        }
-      );
 
-      homeManagerModules.default = import ./modules/home-manager.nix { inherit self; };
+          treefmt = {
+            projectRootFile = "flake.nix";
+            programs = {
+              deadnix.enable = true;
+              nixfmt.enable = true;
+              shellcheck.enable = true;
+              shfmt.enable = true;
+            };
+          };
 
-      formatter = forAllSystems (system: treefmtEval.${system}.config.build.wrapper);
-
-      checks = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
-        {
-          formatting = treefmtEval.${system}.config.build.check self;
-          lint = pkgs.buildNpmPackage {
+          checks.lint = pkgs.buildNpmPackage {
             pname = "git-hooks-lint";
             version = "0.1.0";
             src = ./.;
@@ -109,17 +98,8 @@
               runHook postInstall
             '';
           };
-        }
-      );
 
-      devShells = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          nodejs = pkgs.nodejs;
-        in
-        {
-          default = pkgs.mkShell {
+          devShells.default = pkgs.mkShell {
             packages = [
               pkgs.importNpmLock.hooks.linkNodeModulesHook
               nodejs
@@ -130,8 +110,7 @@
               inherit nodejs;
             };
           };
-        }
-      );
+        };
     };
 
   nixConfig = {
