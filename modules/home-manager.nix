@@ -23,6 +23,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    programs.git.extraConfig.core.hooksPath = "${cfg.package}/lib/git-hooks";
+    programs.git.settings.core.hooksPath = "${cfg.package}/lib/git-hooks";
   };
 }
