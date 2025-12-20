@@ -8,7 +8,7 @@ commitlintの設定をまとめたりしています。
 
 ### home-manager (Nix Flakes)
 
-flake.nixのinputsに追加:
+flake.nixのinputsに追加します。
 
 ```nix
 {
@@ -18,7 +18,7 @@ flake.nixのinputsに追加:
 }
 ```
 
-home-managerのmodulesで有効化:
+home-managerのmodulesとして有効化します。
 
 ```nix
 {
@@ -26,6 +26,8 @@ home-managerのmodulesで有効化:
   programs.git-hooks.enable = true;
 }
 ```
+
+`inputs`経由でアクセスしないと無限再帰になりやすいです。
 
 ## 含まれるhooks
 
