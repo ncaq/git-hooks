@@ -3,10 +3,18 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
-    { self, nixpkgs }:
+    {
+      self,
+      nixpkgs,
+      treefmt-nix,
+    }:
     let
       supportedSystems = [
         "aarch64-darwin"
@@ -15,6 +23,18 @@
         "x86_64-linux"
       ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+      treefmtEval = forAllSystems (
+        system:
+        treefmt-nix.lib.evalModule nixpkgs.legacyPackages.${system} {
+          projectRootFile = "flake.nix";
+          programs = {
+            deadnix.enable = true;
+            nixfmt.enable = true;
+            shellcheck.enable = true;
+            shfmt.enable = true;
+          };
+        }
+      );
     in
     {
       packages = forAllSystems (
@@ -62,12 +82,15 @@
 
       homeManagerModules.default = import ./modules/home-manager.nix { inherit self; };
 
+      formatter = forAllSystems (system: treefmtEval.${system}.config.build.wrapper);
+
       checks = forAllSystems (
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
         in
         {
+          formatting = treefmtEval.${system}.config.build.check self;
           lint = pkgs.buildNpmPackage {
             pname = "git-hooks-lint";
             version = "0.1.0";
