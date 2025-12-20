@@ -29,7 +29,8 @@
 
             src = ./.;
 
-            npmDepsHash = "sha256-k8p4HcjeFRdhz+hy5D9qBJmwJPQVowzLyf5NHITW6hg=";
+            npmDeps = pkgs.importNpmLock { npmRoot = ./.; };
+            npmConfigHook = pkgs.importNpmLock.npmConfigHook;
 
             dontNpmBuild = true;
 
@@ -71,7 +72,8 @@
             pname = "git-hooks-lint";
             version = "0.1.0";
             src = ./.;
-            npmDepsHash = "sha256-k8p4HcjeFRdhz+hy5D9qBJmwJPQVowzLyf5NHITW6hg=";
+            npmDeps = pkgs.importNpmLock { npmRoot = ./.; };
+            npmConfigHook = pkgs.importNpmLock.npmConfigHook;
             dontNpmBuild = true;
             buildPhase = ''
               runHook preBuild
