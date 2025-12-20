@@ -1,11 +1,14 @@
 // @ts-check
 
 import js from "@eslint/js";
+import eslintConfigPrettier from "eslint-config-prettier";
+import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
+import * as importPlugin from "eslint-plugin-import-x";
+import nodePlugin from "eslint-plugin-n";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import { defineConfig, globalIgnores } from "eslint/config";
 
-export default defineConfig([
+export default tseslint.config(
   eslintConfigPrettier,
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
@@ -64,4 +67,4 @@ export default defineConfig([
       "n/no-missing-import": "off",
     },
   },
-]);
+);
