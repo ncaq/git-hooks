@@ -21,6 +21,6 @@ jobs:
             accept-flake-config = true
       - uses: cachix/cachix-action@v16
         with:
-          name: ncaq-dotfiles
+          name: git-hooks
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - run: nix flake check
