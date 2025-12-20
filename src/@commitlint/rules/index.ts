@@ -7,6 +7,6 @@ export const plugin: Plugin = {
   },
 };
 
-export type RulesConfig<V = RuleConfigQuality.User> = {
+export interface RulesConfig<V = RuleConfigQuality.User> {
   "subject-alnum-stop": RuleConfig<V, RegExp | undefined>;
-};
+}
