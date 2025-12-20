@@ -32,7 +32,7 @@
       perSystem =
         { pkgs, ... }:
         let
-          nodejs = pkgs.nodejs;
+          nodejs = pkgs.nodejs_24;
         in
         {
           packages.default = pkgs.buildNpmPackage {
