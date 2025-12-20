@@ -1,10 +1,10 @@
 {
   "private": true,
   "scripts": {
-    "fix": "concurrently 'yarn:fix:*'",
-    "fix:eslint": "yarn lint:eslint --fix",
-    "fix:prettier": "yarn lint:prettier --write",
-    "lint": "concurrently 'yarn:lint:*'",
+    "fix": "concurrently 'npm:fix:*'",
+    "fix:eslint": "npm run lint:eslint -- --fix",
+    "fix:prettier": "npm run lint:prettier -- --write",
+    "lint": "concurrently 'npm:lint:*'",
     "lint:eslint": "eslint --ext .js --ext .ts .",
     "lint:prettier": "prettier --ignore-unknown --check '**/*.{js,jsx,ts,tsx,json,html,css,less,sass,scss,yml,yaml}'",
     "lint:tsc": "tsc --noEmit"
@@ -28,7 +28,6 @@
     "prettier": "^3.5.3",
     "typescript": "^5.8.3"
   },
-  "packageManager": "yarn@4.9.1+sha512.f95ce356460e05be48d66401c1ae64ef84d163dd689964962c6888a9810865e39097a5e9de748876c2e0bf89b232d583c33982773e9903ae7a76257270986538",
   "engines": {
     "node": ">=20.17"
   }
