@@ -42,7 +42,7 @@ export default tseslint.config(
       parserOptions: {
         projectService: {
           // TypeScriptルールでJavaScriptをlintする時はデフォルトのprojectを使用。
-          allowDefaultProject: ["*.js", "*.jsx", "*.cjs", "*.mjs"],
+          allowDefaultProject: ["*.js", "*.jsx", "*.cjs"],
         },
         tsconfigRootDir: import.meta.dirname,
       },
