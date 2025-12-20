@@ -58,5 +58,6 @@
           };
         }
       );
+      homeManagerModules.default = import ./modules/home-manager.nix { inherit self; };
     };
 }
