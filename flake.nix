@@ -3,10 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
-    flake-parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    flake-parts.url = "github:hercules-ci/flake-parts";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -23,10 +20,13 @@
         "x86_64-linux"
       ];
 
-      imports = [ inputs.treefmt-nix.flakeModule ];
+      imports = [
+        inputs.flake-parts.flakeModules.modules
+        inputs.treefmt-nix.flakeModule
+      ];
 
       flake = {
-        homeManagerModules.default = import ./modules/home-manager.nix { inherit self; };
+        modules.homeManager.default = import ./modules/home-manager.nix { inherit self; };
       };
 
       perSystem =

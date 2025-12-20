@@ -22,7 +22,7 @@ home-managerのmodulesとして有効化します。
 
 ```nix
 {
-  imports = [ inputs.git-hooks.homeManagerModules.default ];
+  imports = [ inputs.git-hooks.modules.homeManager.default ];
   programs.git-hooks.enable = true;
 }
 ```
