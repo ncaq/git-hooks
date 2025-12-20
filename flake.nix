@@ -88,6 +88,27 @@
           };
         }
       );
+
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          nodejs = pkgs.nodejs;
+        in
+        {
+          default = pkgs.mkShell {
+            packages = [
+              pkgs.importNpmLock.hooks.linkNodeModulesHook
+              nodejs
+            ];
+
+            npmDeps = pkgs.importNpmLock.buildNodeModules {
+              npmRoot = ./.;
+              inherit nodejs;
+            };
+          };
+        }
+      );
     };
 
   nixConfig = {
