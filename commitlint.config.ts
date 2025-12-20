@@ -1,4 +1,3 @@
-/* eslint-disable import/no-import-module-exports */
 import type { RulesConfig, UserConfig } from "@commitlint/types";
 import { RuleConfigSeverity } from "@commitlint/types";
 import { plugin as userPlugin, RulesConfig as UserRulesConfig } from "./src/@commitlint/rules/index";
