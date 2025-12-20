@@ -6,9 +6,9 @@ import { createTypeScriptImportResolver } from "eslint-import-resolver-typescrip
 import * as importPlugin from "eslint-plugin-import-x";
 import nodePlugin from "eslint-plugin-n";
 import globals from "globals";
-import tseslint from "typescript-eslint";
+import { config, configs } from "typescript-eslint";
 
-export default tseslint.config(
+export default config(
   eslintConfigPrettier,
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
@@ -26,12 +26,7 @@ export default tseslint.config(
   },
   {
     files: ["**/*.{ts,tsx,js,jsx,cjs,mjs}"],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      tseslint.configs.strict,
-      tseslint.configs.stylistic,
-    ],
+    extends: [js.configs.recommended, configs.recommended, configs.strict, configs.stylistic],
     rules: {
       // アンダースコアつきの引数は使わなくても無視する対象。
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" }],
