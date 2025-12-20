@@ -3,4 +3,4 @@ set -eu
 
 script_dir=$(dirname "$0")
 commit_editmsg_file="$(realpath "${1}")"
-npm --prefix "$script_dir" exec -- commitlint --edit "$commit_editmsg_file"
+npm --prefix "$script_dir" exec -- commitlint --config "$script_dir/commitlint.config.ts" --edit "$commit_editmsg_file"
