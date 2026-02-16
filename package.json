@@ -10,7 +10,7 @@
     "lint:tsc": "tsc --noEmit"
   },
   "dependencies": {
-    "@commitlint/cli": "^18.6.1",
+    "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^18.6.3",
     "@commitlint/message": "^18.6.1",
     "@commitlint/types": "^18.6.1"
