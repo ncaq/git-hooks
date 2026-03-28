@@ -12,13 +12,17 @@ export const subjectAlnumStop: SyncRule<RegExp | undefined> = (
   when = "always",
   value = /[^\p{Letter}\p{Number}`]/u,
 ) => {
-  const colonIndex = parsed.header.indexOf(":");
-  if (colonIndex > 0 && colonIndex === parsed.header.length - 1) {
+  const header = parsed.header;
+  if (header == null) {
     return [true];
   }
 
-  const input = parsed.header;
-  const lastChar = input.at(-1);
+  const colonIndex = header.indexOf(":");
+  if (colonIndex > 0 && colonIndex === header.length - 1) {
+    return [true];
+  }
+
+  const lastChar = header.at(-1);
   if (lastChar == null) {
     return [true];
   }
