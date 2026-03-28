@@ -1,4 +1,4 @@
-import { RuleConfig, RuleConfigQuality, Plugin } from "@commitlint/types";
+import { type RuleConfig, RuleConfigQuality, type Plugin } from "@commitlint/types";
 import { subjectAlnumStop } from "./subject-alnum-stop";
 
 export const plugin: Plugin = {
