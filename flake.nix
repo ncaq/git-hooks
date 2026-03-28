@@ -97,6 +97,8 @@
             npmDeps = pkgs.importNpmLock { npmRoot = ./.; };
             inherit (pkgs.importNpmLock) npmConfigHook;
 
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+
             dontNpmBuild = true;
 
             installPhase = ''
@@ -113,6 +115,24 @@
               cp post-merge $out/lib/git-hooks/
 
               runHook postInstall
+            '';
+
+            postFixup = ''
+              for hook in $out/lib/git-hooks/commit-msg $out/lib/git-hooks/post-merge $out/lib/git-hooks/script/delete-merged-branch; do
+                wrapProgram "$hook" --prefix PATH : ${
+                  lib.makeBinPath (
+                    with pkgs;
+                    [
+                      coreutils
+                      findutils
+                      gawk
+                      git
+                      gnugrep
+                      nodejs
+                    ]
+                  )
+                }
+              done
             '';
 
             meta = {
