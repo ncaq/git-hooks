@@ -1,0 +1,4 @@
+[default.extend-words]
+# Immediately Invoked Function Expression (IIFE)の略語。
+# typosはcamelCase分割で"IIF"をtypoと判定するため、ワードレベルで除外する。
+IIF = "IIF"

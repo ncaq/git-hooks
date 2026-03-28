@@ -11,8 +11,18 @@
   };
 
   outputs =
-    inputs@{ flake-parts, self, ... }:
+    inputs@{
+      flake-parts,
+      self,
+      treefmt-nix,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        inputs.flake-parts.flakeModules.modules
+        treefmt-nix.flakeModule
+      ];
+
       systems = [
         "aarch64-darwin"
         "aarch64-linux"
@@ -20,19 +30,62 @@
         "x86_64-linux"
       ];
 
-      imports = [
-        inputs.flake-parts.flakeModules.modules
-        inputs.treefmt-nix.flakeModule
-      ];
-
       flake = {
         modules.homeManager.default = import ./modules/home-manager.nix { inherit self; };
       };
 
       perSystem =
-        { pkgs, ... }:
+        {
+          pkgs,
+          lib,
+          ...
+        }:
         let
           nodejs = pkgs.nodejs_24;
+
+          npmRoot = lib.fileset.toSource {
+            root = ./.;
+            fileset = lib.fileset.unions [
+              ./package.json
+              ./package-lock.json
+            ];
+          };
+          nodeModules = pkgs.importNpmLock.buildNodeModules {
+            inherit
+              nodejs
+              npmRoot
+              ;
+          };
+
+          tsSrc = lib.fileset.toSource {
+            root = ./.;
+            fileset = lib.fileset.unions [
+              ./src
+              ./script
+              ./.editorconfig
+              ./.gitignore
+              ./commit-msg
+              ./commitlint.config.ts
+              ./eslint.config.ts
+              ./package.json
+              ./post-merge
+              ./tsconfig.json
+            ];
+          };
+
+          # npm run経由でスクリプト実行を簡単にするためのヘルパー。
+          mkNpmCheck =
+            name: script:
+            pkgs.runCommand name
+              {
+                nativeBuildInputs = [ nodejs ];
+              }
+              ''
+                cp -r ${tsSrc}/. .
+                ln -s ${nodeModules}/node_modules node_modules
+                npm run ${script}
+                touch $out
+              '';
         in
         {
           packages.default = pkgs.buildNpmPackage {
@@ -42,7 +95,7 @@
             src = ./.;
 
             npmDeps = pkgs.importNpmLock { npmRoot = ./.; };
-            npmConfigHook = pkgs.importNpmLock.npmConfigHook;
+            inherit (pkgs.importNpmLock) npmConfigHook;
 
             dontNpmBuild = true;
 
@@ -70,45 +123,66 @@
             };
           };
 
-          treefmt = {
+          treefmt.config = {
             projectRootFile = "flake.nix";
             programs = {
+              actionlint.enable = true;
               deadnix.enable = true;
               nixfmt.enable = true;
+              prettier.enable = true;
               shellcheck.enable = true;
               shfmt.enable = true;
+              typos.enable = true;
+              zizmor.enable = true;
+
+              statix = {
+                enable = true;
+                disabled-lints = [ "eta_reduction" ];
+              };
+            };
+            settings.formatter = {
+              editorconfig-checker = {
+                command = pkgs.editorconfig-checker;
+                includes = [ "*" ];
+              };
             };
           };
 
-          checks.lint = pkgs.buildNpmPackage {
-            pname = "git-hooks-lint";
-            version = "0.1.0";
-            src = ./.;
-            npmDeps = pkgs.importNpmLock { npmRoot = ./.; };
-            npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-            dontNpmBuild = true;
-            buildPhase = ''
-              runHook preBuild
-              npm run lint
-              runHook postBuild
-            '';
-            installPhase = ''
-              runHook preInstall
-              touch $out
-              runHook postInstall
-            '';
+          checks = {
+            lint-eslint = mkNpmCheck "lint-eslint" "lint:eslint";
+            lint-prettier = mkNpmCheck "lint-prettier" "lint:prettier";
+            lint-tsc = mkNpmCheck "lint-tsc" "lint:tsc";
+          };
+
+          packages = {
+            # flake.lockの管理バージョンをre-exportすることで安定した利用を促進。
+            inherit (pkgs)
+              nix-fast-build
+              ;
           };
 
           devShells.default = pkgs.mkShell {
-            packages = [
-              pkgs.importNpmLock.hooks.linkNodeModulesHook
+            buildInputs = with pkgs; [
+              # treefmtで指定したプログラムの単体版。
+              actionlint
+              deadnix
+              editorconfig-checker
+              nixfmt
+              prettier
+              shellcheck
+              shfmt
+              statix
+              typos
+              zizmor
+
+              # nixの関連ツール。
+              nix-fast-build
+
+              # Node.js
               nodejs
             ];
-
-            npmDeps = pkgs.importNpmLock.buildNodeModules {
-              npmRoot = ./.;
-              inherit nodejs;
-            };
+            packages = [ pkgs.importNpmLock.hooks.linkNodeModulesHook ];
+            npmDeps = nodeModules;
           };
         };
     };

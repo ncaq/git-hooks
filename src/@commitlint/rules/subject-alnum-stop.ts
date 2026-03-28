@@ -18,9 +18,13 @@ export const subjectAlnumStop: SyncRule<RegExp | undefined> = (
   }
 
   const input = parsed.header;
+  const lastChar = input.at(-1);
+  if (lastChar == null) {
+    return [true];
+  }
 
   const negated = when === "never";
-  const hasStop = value.test(input[input.length - 1]);
+  const hasStop = value.test(lastChar);
 
   return [negated ? !hasStop : hasStop, message(["subject", negated ? "may not" : "must", "end with alnum stop"])];
 };

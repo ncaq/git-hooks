@@ -2,20 +2,25 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: "/"
-    schedule:
-      interval: weekly
+    open-pull-requests-limit: 20
     labels:
       - "Type: CI"
       - "Type: Dependencies"
-    open-pull-requests-limit: 20
+    schedule:
+      interval: daily
   - package-ecosystem: npm
     directory: "/"
-    schedule:
-      interval: weekly
+    open-pull-requests-limit: 20
     labels:
       - "Type: Dependencies"
-    open-pull-requests-limit: 20
+    schedule:
+      interval: monthly
     groups:
+      types:
+        patterns:
+          - "@types/*"
+        exclude-patterns:
+          - "@types/node"
       eslint:
         patterns:
           - "*eslint*"
@@ -26,4 +31,3 @@ updates:
       - dependency-name: "@types/node"
         update-types:
           - "version-update:semver-major"
-          - "version-update:semver-minor"
