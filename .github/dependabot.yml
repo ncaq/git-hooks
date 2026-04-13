@@ -8,13 +8,17 @@ updates:
       - "Type: Dependencies"
     schedule:
       interval: daily
+    cooldown:
+      default-days: 7
   - package-ecosystem: npm
     directory: "/"
     open-pull-requests-limit: 20
     labels:
       - "Type: Dependencies"
     schedule:
-      interval: monthly
+      interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       types:
         patterns:

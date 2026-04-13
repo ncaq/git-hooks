@@ -154,16 +154,14 @@
               typos.enable = true;
               zizmor.enable = true;
 
-              statix = {
-                enable = true;
-                disabled-lints = [ "eta_reduction" ];
-              };
+              statix.enable = true;
             };
             settings.formatter = {
               editorconfig-checker = {
                 command = pkgs.editorconfig-checker;
                 includes = [ "*" ];
               };
+              zizmor.options = [ "--pedantic" ];
             };
           };
 
@@ -195,7 +193,11 @@
               zizmor
 
               # nixの関連ツール。
+              nil
               nix-fast-build
+
+              # GitHub関連ツール。
+              gh
 
               # Node.js
               nodejs
