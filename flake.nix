@@ -105,7 +105,7 @@
 
               mkdir -p $out/lib/git-hooks
 
-              ln -s ${nodeModules}/node_modules node_modules
+              ln -s ${nodeModules}/node_modules $out/lib/git-hooks/node_modules
               cp -r script $out/lib/git-hooks/
               cp -r src $out/lib/git-hooks/
               cp commit-msg $out/lib/git-hooks/
