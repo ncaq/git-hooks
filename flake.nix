@@ -176,7 +176,7 @@
             inherit (pkgs)
               nix-fast-build
               ;
-            packages.default = git-hooks;
+            default = git-hooks;
           };
 
           devShells.default = pkgs.mkShell {
