@@ -19,7 +19,7 @@
   "devDependencies": {
     "@eslint/compat": "^2",
     "@eslint/js": "^10",
-    "@types/node": "^24",
+    "@types/node": "^22",
     "eslint": "^10",
     "eslint-config-prettier": "^10",
     "eslint-import-resolver-typescript": "^4",
@@ -32,6 +32,6 @@
     "typescript-eslint": "^8"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=22.22"
   }
 }
