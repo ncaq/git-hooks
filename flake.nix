@@ -85,9 +85,8 @@
                 npm run ${script}
                 touch $out
               '';
-        in
-        {
-          packages.default = pkgs.buildNpmPackage {
+
+          git-hooks = pkgs.buildNpmPackage {
             pname = "git-hooks";
             version = "0.1.0";
 
@@ -141,7 +140,8 @@
               maintainers = [ ];
             };
           };
-
+        in
+        {
           treefmt.config = {
             projectRootFile = "flake.nix";
             programs = {
@@ -165,6 +165,7 @@
           };
 
           checks = {
+            inherit git-hooks;
             lint-eslint = mkNpmCheck "lint-eslint" "lint:eslint";
             lint-prettier = mkNpmCheck "lint-prettier" "lint:prettier";
             lint-tsc = mkNpmCheck "lint-tsc" "lint:tsc";
@@ -175,6 +176,7 @@
             inherit (pkgs)
               nix-fast-build
               ;
+            packages.default = git-hooks;
           };
 
           devShells.default = pkgs.mkShell {
