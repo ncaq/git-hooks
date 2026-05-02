@@ -40,7 +40,7 @@
           ...
         }:
         let
-          nodejs = pkgs.nodejs_24;
+          inherit (pkgs) nodejs;
 
           npmRoot = lib.fileset.toSource {
             root = ./.;
