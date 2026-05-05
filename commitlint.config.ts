@@ -6,9 +6,13 @@ const rules: Partial<RulesConfig & UserRulesConfig> = {
   // 日本語なども含めた可読文字で終わることを求める。
   "subject-alnum-stop": [RuleConfigSeverity.Error, "never"],
 
-  // URLやMarkdownのリンクなど改行出来ない要素が頻繁に出現するため緩める。
-  "body-max-line-length": [RuleConfigSeverity.Disabled],
-  "footer-max-line-length": [RuleConfigSeverity.Disabled],
+  // 件名の長さはGit公式推奨の50文字は厳しすぎるのである程度緩和します。
+  "header-max-length": [RuleConfigSeverity.Error, "always", 72],
+
+  // 本文の1行幅はGit公式推奨の72文字は現代のターミナルを考えると厳しすぎるので100文字まで。
+  "body-max-line-length": [RuleConfigSeverity.Error, "always", 100],
+  "footer-max-line-length": [RuleConfigSeverity.Error, "always", 100],
+
   // 関数などの識別子などを直接コミットメッセージのタイトルに書きたいので無効にする。
   "subject-case": [RuleConfigSeverity.Disabled],
 };
