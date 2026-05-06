@@ -61,6 +61,7 @@
             fileset = lib.fileset.unions [
               ./src
               ./script
+              ./test
               ./.editorconfig
               ./.gitignore
               ./commit-msg
@@ -169,6 +170,7 @@
             lint-eslint = mkNpmCheck "lint-eslint" "lint:eslint";
             lint-prettier = mkNpmCheck "lint-prettier" "lint:prettier";
             lint-tsc = mkNpmCheck "lint-tsc" "lint:tsc";
+            test = mkNpmCheck "test" "test";
           };
 
           packages = {
