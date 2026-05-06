@@ -49,7 +49,7 @@ describe("referencesActionEnum", () => {
       "ref",
     ]);
     expect(valid).toBe(false);
-    expect(message).toBe("references action Close must be one of [close, ref]");
+    expect(message).toBe("references action [Close] must be one of [close, ref]");
   });
 
   it("複数形のClosesは拒否されます。", () => {
@@ -86,7 +86,7 @@ describe("referencesActionEnum", () => {
       ["close", "ref"],
     );
     expect(valid).toBe(false);
-    expect(message).toBe("references action Fixes, refs must be one of [close, ref]");
+    expect(message).toBe("references action [Fixes, refs] must be one of [close, ref]");
   });
 
   it("when=neverでは許可リストに含まれるactionが違反になります。", () => {
@@ -95,7 +95,7 @@ describe("referencesActionEnum", () => {
       "ref",
     ]);
     expect(valid).toBe(false);
-    expect(message).toBe("references action close must not be one of [close, ref]");
+    expect(message).toBe("references action [close] must not be one of [close, ref]");
   });
 
   it("when=neverで許可リスト外のactionだけならpassします。", () => {

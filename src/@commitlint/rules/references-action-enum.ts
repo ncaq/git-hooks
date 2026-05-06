@@ -37,6 +37,6 @@ export const referencesActionEnum: SyncRule<readonly string[]> = (parsed, when, 
 
   return [
     !hasViolation,
-    message([`references action ${violationsActions}`, mustOrMustNot, `be one of [${ruleValues}]`]),
+    message([`references action [${violationsActions}]`, mustOrMustNot, `be one of [${ruleValues}]`]),
   ];
 };
