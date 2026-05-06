@@ -3,14 +3,15 @@ import { RuleConfigSeverity } from "@commitlint/types";
 import { plugin as userPlugin, type RulesConfig as UserRulesConfig } from "./src/@commitlint/rules/index";
 
 /**
- * issue参照キーワード。
- * 特にcommitlintの標準データではrefは含まれていないので明示的に追加する必要があります。
+ * コミットメッセージで許可するissue参照キーワード。
+ * 特にcommitlintの標準データでは`"ref"`は含まれていないので明示的に追加する必要があります。
  */
 const allowedActions = ["close", "ref"] as const;
 
 /**
- * issue参照キーワード。
- * 認識して拒否するために最終的に許可しない語句もここに含める必要があります。
+ * 明示的に拒否するためにパーサへ認識させるissue参照キーワード。
+ * `referenceActions`に登録されない語句はそもそも参照として抽出されず、
+ * ルール側で違反検出できないため列挙します。
  */
 const rejectedActions = [
   "closed",
