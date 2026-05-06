@@ -10,7 +10,7 @@ import type { SyncRule } from "@commitlint/types";
  * `when="never"`: `value`に含まれるアクションを禁止し、それ以外を許可する。
  */
 export const referencesActionEnum: SyncRule<readonly string[]> = (parsed, when, value) => {
-  if (when !== "always" && when !== "never") {
+  if (when == null || (when !== "always" && when !== "never")) {
     throw new Error("references-action-enum: Invalid rule configuration: when must be 'always' or 'never'");
   }
 
