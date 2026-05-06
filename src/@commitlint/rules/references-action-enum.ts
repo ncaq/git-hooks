@@ -11,12 +11,12 @@ export const referencesActionEnum: SyncRule<readonly string[]> = (parsed, when, 
     throw new Error("references-action-enum: Invalid rule configuration: when must be 'always' or 'never'");
   }
 
-  if (value == null || value.length === 0) {
+  if (!Array.isArray(value) || value.length === 0) {
     throw new Error("references-action-enum: Invalid rule configuration: value must be a non-empty array");
   }
 
   const references = parsed.references;
-  if (references == null || references.length === 0) {
+  if (!Array.isArray(references) || references.length === 0) {
     return [true];
   }
 
