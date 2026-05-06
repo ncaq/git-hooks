@@ -2,6 +2,29 @@ import type { RulesConfig, UserConfig } from "@commitlint/types";
 import { RuleConfigSeverity } from "@commitlint/types";
 import { plugin as userPlugin, type RulesConfig as UserRulesConfig } from "./src/@commitlint/rules/index";
 
+/**
+ * issue参照キーワード。
+ * 特にcommitlintの標準データではrefは含まれていないので明示的に追加する必要があります。
+ */
+const allowedActions = ["close", "ref"] as const;
+
+/**
+ * issue参照キーワード。
+ * 認識して拒否するために最終的に許可しない語句もここに含める必要があります。
+ */
+const rejectedActions = [
+  "closed",
+  "closes",
+  "fix",
+  "fixed",
+  "fixes",
+  "references",
+  "refs",
+  "resolve",
+  "resolved",
+  "resolves",
+] as const;
+
 const rules: Partial<RulesConfig & UserRulesConfig> = {
   // ヘッダの幅は72文字まで。Git公式推奨の50文字は厳しすぎるので緩和。
   "header-max-length": [RuleConfigSeverity.Error, "always", 72],
@@ -17,31 +40,17 @@ const rules: Partial<RulesConfig & UserRulesConfig> = {
   "subject-case": [RuleConfigSeverity.Disabled],
 
   // issue参照のアクションキーワードは小文字単数の`close`と`ref`のみ許可。
-  "references-action-enum": [RuleConfigSeverity.Error, "always", ["close", "ref"]],
+  "references-action-enum": [RuleConfigSeverity.Error, "always", allowedActions],
 };
 
 const Configuration: UserConfig = {
   extends: ["@commitlint/config-conventional"],
-  // パーサがissue参照として抽出する語彙を拡張します。
-  // ここに含めない語句は参照として認識されないため`references-action-enum`で検査できません。
-  // 正しく拒否するために許可しない語句もここに含める必要があります。
-  // 大文字始まりはパーサがcase-insensitive(gi)で照合するためここに含める必要はありません。
   parserPreset: {
     parserOpts: {
-      referenceActions: [
-        "close",
-        "closed",
-        "closes",
-        "fix",
-        "fixed",
-        "fixes",
-        "ref",
-        "references",
-        "refs",
-        "resolve",
-        "resolved",
-        "resolves",
-      ],
+      // パーサがissue参照キーワードとして抽出する語彙を拡張します。
+      // ここに含めない語句は参照として認識されないため`references-action-enum`で検査できません。
+      // 大文字始まりはパーサがcase-insensitive(gi)で照合するため別途追加する必要はありません。
+      referenceActions: [...allowedActions, ...rejectedActions],
     },
   },
   rules,
