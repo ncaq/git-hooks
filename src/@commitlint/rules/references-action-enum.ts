@@ -7,7 +7,7 @@ import type { SyncRule } from "@commitlint/types";
  * `action`が`null`(キーワード無しの裸の`#83`等)はスキップします。
  */
 export const referencesActionEnum: SyncRule<readonly string[]> = (parsed, when, value) => {
-  if (when == null && when !== "always" && when !== "never") {
+  if (when !== "always" && when !== "never") {
     throw new Error("references-action-enum: Invalid rule configuration: when must be 'always' or 'never'");
   }
 
