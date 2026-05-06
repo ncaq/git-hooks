@@ -20,17 +20,20 @@ export const referencesActionEnum: SyncRule<readonly string[]> = (parsed, when, 
     return [true];
   }
 
-  const violations = references.filter((reference) => reference.action != null && !value.includes(reference.action));
-  const hasViolation = 0 < violations.length;
-  const violationsActions = violations.map((reference) => reference.action).join(", ");
-
   const negated = when === "never";
   const mustOrMustNot = negated ? "must not" : "must";
 
-  const expectValues = value.join(", ");
+  const violations = references.filter(
+    (reference) =>
+      reference.action != null && (negated ? value.includes(reference.action) : !value.includes(reference.action)),
+  );
+  const hasViolation = 0 < violations.length;
+  const violationsActions = violations.map((reference) => reference.action).join(", ");
+
+  const ruleValues = value.join(", ");
 
   return [
     negated ? hasViolation : !hasViolation,
-    message([`references action ${violationsActions}`, mustOrMustNot, `be one of [${expectValues}]`]),
+    message([`references action ${violationsActions}`, mustOrMustNot, `be one of [${ruleValues}]`]),
   ];
 };
