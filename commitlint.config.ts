@@ -15,10 +15,34 @@ const rules: Partial<RulesConfig & UserRulesConfig> = {
 
   // 関数などの識別子などを直接コミットメッセージのタイトルに書きたいのでcase識別は無効にします。
   "subject-case": [RuleConfigSeverity.Disabled],
+
+  // issue参照のアクションキーワードは小文字単数の`close`と`ref`のみ許可。
+  "references-action-enum": [RuleConfigSeverity.Error, "always", ["close", "ref"]],
 };
 
 const Configuration: UserConfig = {
   extends: ["@commitlint/config-conventional"],
+  // パーサがissue参照として抽出する語彙を拡張します。
+  // ここに含めない語句は参照として認識されないため`references-action-enum`で検査できません。
+  // 大文字始まりはパーサがcase-insensitive(gi)で照合するためここに含める必要はありません。
+  parserPreset: {
+    parserOpts: {
+      referenceActions: [
+        "close",
+        "closed",
+        "closes",
+        "fix",
+        "fixed",
+        "fixes",
+        "ref",
+        "references",
+        "refs",
+        "resolve",
+        "resolved",
+        "resolves",
+      ],
+    },
+  },
   rules,
   plugins: [userPlugin],
 };
