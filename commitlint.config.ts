@@ -24,6 +24,7 @@ const Configuration: UserConfig = {
   extends: ["@commitlint/config-conventional"],
   // パーサがissue参照として抽出する語彙を拡張します。
   // ここに含めない語句は参照として認識されないため`references-action-enum`で検査できません。
+  // 正しく拒否するために許可しない語句もここに含める必要があります。
   // 大文字始まりはパーサがcase-insensitive(gi)で照合するためここに含める必要はありません。
   parserPreset: {
     parserOpts: {
