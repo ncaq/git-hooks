@@ -3,8 +3,11 @@ import type { SyncRule } from "@commitlint/types";
 
 /**
  * issue参照に使えるアクションキーワードを限定します。
- * `parsed.references[].action`が許可リストに完全一致するかをケース区別ありで検査します。
+ * `parsed.references[].action`をリストによりケース区別ありで検査します。
  * `action`が`null`(キーワード無しの裸の`#83`等)はスキップします。
+ *
+ * `when="always"`: `value`に含まれるアクションのみ許可し、それ以外を違反とする。
+ * `when="never"`: `value`に含まれるアクションを禁止し、それ以外を許可する。
  */
 export const referencesActionEnum: SyncRule<readonly string[]> = (parsed, when, value) => {
   if (when !== "always" && when !== "never") {
