@@ -240,6 +240,27 @@ second part.`;
     expect(msg).toContain("違反2の行");
   });
 
+  it("単一違反のalwaysメッセージは指定の構造を持ちます。", () => {
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("句読点なしの一行"), "always");
+    expect(valid).toBe(false);
+    expect(msg).toBe("body lines [句読点なしの一行] must end with punctuation and break after sentences");
+  });
+
+  it("複数違反のalwaysメッセージは違反行を` / `で結合します。", () => {
+    const body = `違反1の行
+違反2の行
+句点で終わる。`;
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(false);
+    expect(msg).toBe("body lines [違反1の行 / 違反2の行] must end with punctuation and break after sentences");
+  });
+
+  it("neverメッセージは`must not`を含む指定の構造を持ちます。", () => {
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("ends with period."), "never");
+    expect(valid).toBe(false);
+    expect(msg).toBe("body lines [ends with period.] must not end with punctuation and break after sentences");
+  });
+
   it("カスタム正規表現で句点のみ許可するとカンマ終わりはfailします。", () => {
     const onlyPeriod = /[.。]/u;
     const body = `ends with comma,
