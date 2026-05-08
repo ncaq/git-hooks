@@ -349,4 +349,155 @@ next line`;
     const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
     expect(valid).toBe(true);
   });
+
+  it("ATX見出しは対象外です。", () => {
+    const body = `# 見出し
+
+本文の最後。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("複数レベルのATX見出しも対象外です。", () => {
+    const body = `# 見出し1
+
+## 見出し2
+
+### 見出し3
+
+本文。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("水平線(ハイフン)は対象外です。", () => {
+    const body = `区切り前。
+
+---
+
+区切り後。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("水平線(アスタリスク)は対象外です。", () => {
+    const body = `区切り前。
+
+***
+
+区切り後。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("水平線(アンダースコア)は対象外です。", () => {
+    const body = `区切り前。
+
+___
+
+区切り後。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("チルダのコードフェンスも対象外です。", () => {
+    const body = `コード:
+
+~~~
+const x = 1
+~~~
+
+以上です。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("インデントされたバッククオートフェンスも対象外です。", () => {
+    const body = `コード:
+
+  \`\`\`
+  const x = 1
+  \`\`\`
+
+以上です。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("4個以上のバッククオートフェンスも対象外です。", () => {
+    const body = `コード:
+
+\`\`\`\`
+\`\`\`
+内側に短いフェンス
+\`\`\`
+\`\`\`\`
+
+以上です。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("チルダフェンス内のバッククオートはフェンスを閉じません。", () => {
+    const body = `~~~
+\`\`\`
+中身です
+\`\`\`
+~~~
+
+本文の終わり。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("番号付きリストの`1)`形式も対象外です。", () => {
+    const body = `手順:
+
+1) 最初
+2) 次
+3) 最後`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("setext見出しの`=`下線(h1)は前行とペアで対象外です。", () => {
+    const body = `見出し
+======
+
+本文の最後。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("setext見出しの`-`下線(h2)は前行とペアで対象外です。", () => {
+    const body = `見出し
+------
+
+本文の最後。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("複数のsetext見出しが連続しても各ペアで対象外です。", () => {
+    const body = `見出し1
+======
+
+本文1。
+
+見出し2
+------
+
+本文2。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("body冒頭のsetext見出しも対象外です。", () => {
+    const body = `冒頭の見出し
+============
+
+本文。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
 });
