@@ -324,7 +324,7 @@ export const bodyLineBreakPunctuation: SyncRule<RegExp> = (parsed, when = "alway
   const result = bodyParser(anchoredTerminator, negated)(stream(Array.from(body)));
 
   if (isLeft(result)) {
-    // ブロックを消費するはずなので`Left`にはならないはずなので想定外なので例外を投げます。
+    // `bodyParser`は`P.many(block(...))`で全入力を消費しきるため`Left`にはならないはずなので想定外として例外を投げる。
     throw new Error("Unexpected parse failure in bodyLineBreakPunctuation");
   }
 
