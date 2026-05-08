@@ -10,7 +10,7 @@ import { type Char, default as C } from "parser-ts/char";
  * 読点を改行強制対象から外す前置文字数の閾値。
  * 数文字程度の接続詞(`また、`等)は途中の読点でも改行を求めない。
  */
-const commaPrefixThreshold = 5 as const;
+const commaPrefixThreshold = 6 as const;
 
 const periodChars = ".。．" as const;
 const commaChars = ",，、" as const;
@@ -305,7 +305,7 @@ const bodyParser = (anchoredTerminator: RegExp, negated: boolean): P.Parser<Char
  * `when="always"`: 各行は以下の条件を全て満たす必要がある。
  * - 行末が`value`の終端文字で終わる
  * - 行の途中に句点(`.`/`。`/`．`)が無い
- * - 行の途中の読点(`,`/`，`/`、`)は前置文字数が閾値以下のときのみ許容する
+ * - 行の途中の読点(`,`/`，`/`、`)は前置文字数が閾値未満のときのみ許容する
  *
  * 空行・リスト項目(`-`/`*`/`+`/番号付き)・コードフェンス内・引用ブロック・
  * ATX見出し・水平線・setext見出し(段落行+下線のペア)は対象外。
