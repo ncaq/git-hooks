@@ -302,7 +302,7 @@ const bodyParser = (anchoredTerminator: RegExp, negated: boolean): P.Parser<Char
 /**
  * コミットメッセージ`body`の唐突な改行を抑制するルール。
  *
- * `when="always"`: 各行は次の双方を満たす必要がある。
+ * `when="always"`: 各行は以下の条件を全て満たす必要がある。
  * - 行末が`value`の終端文字で終わる
  * - 行の途中に句点(`.`/`。`/`．`)が無い
  * - 行の途中の読点(`,`/`，`/`、`)は前置文字数が閾値以下のときのみ許容する
