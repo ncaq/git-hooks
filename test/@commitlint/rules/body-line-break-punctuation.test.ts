@@ -272,6 +272,25 @@ next line`;
     expect(valid).toBe(false);
   });
 
+  it("全角句点で終わる行はpassします。", () => {
+    const body = `1行目です．
+2行目です．`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("全角句点が行の途中にあるとfailします。", () => {
+    const [valid] = bodyLineBreakPunctuation(buildCommit("1行目です．2行目です．"), "always");
+    expect(valid).toBe(false);
+  });
+
+  it("全角カンマで終わる行はpassします。", () => {
+    const body = `読点で終わる，
+次の行に続く．`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
   it("読点が行の途中で前置文字が短ければpassします。", () => {
     const [valid] = bodyLineBreakPunctuation(buildCommit("また、続きを書きます。"), "always");
     expect(valid).toBe(true);
@@ -564,6 +583,32 @@ const x = 1
   it("body冒頭のsetext見出しも対象外です。", () => {
     const body = `冒頭の見出し
 ============
+
+本文。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("段落行と下線の間に空行があるとsetext見出しとして扱われず段落行が違反として検査されます。", () => {
+    const body = `見出し候補
+
+======
+
+本文。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(false);
+  });
+
+  it("段落行がリスト項目の場合setext見出しとして扱われずsetextHeadingBlockがロールバックします。", () => {
+    const body = `- 項目
+======
+句読点なしの行`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(false);
+  });
+
+  it("孤立した下線行のみが出現してもexemptLineBlockで対象外として扱われます。", () => {
+    const body = `======
 
 本文。`;
     const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
