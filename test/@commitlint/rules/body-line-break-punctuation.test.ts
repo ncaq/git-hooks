@@ -480,6 +480,45 @@ const x = 1
     expect(valid).toBe(true);
   });
 
+  it("5個のバッククオートフェンスは3個では閉じられず以降が全てコードブロック扱いになります。", () => {
+    const body = `コード:
+
+\`\`\`\`\`
+const x = 1
+\`\`\`
+内側に句読点なしの行があっても検出されない
+\`\`\`\`\`
+
+末尾です。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("チルダフェンスをバッククオートで閉じようとしても閉じず内部の違反は検出されません。", () => {
+    const body = `~~~
+const x = 1
+\`\`\`
+ここは句読点なしでも違反として検出されない
+\`\`\`
+~~~
+
+本文の終わり。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("4スペース以上インデントしたバッククオートはフェンスとして認識されず内側が検査対象になります。", () => {
+    const body = `コード:
+
+    \`\`\`
+    const x = 1
+    \`\`\`
+
+末尾。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(false);
+  });
+
   it("番号付きリストの`1)`形式も対象外です。", () => {
     const body = `手順:
 
