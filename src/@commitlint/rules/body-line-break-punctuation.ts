@@ -4,9 +4,7 @@ import { isRight } from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import * as P from "parser-ts/Parser";
 import { stream, type Stream } from "parser-ts/Stream";
-import * as C from "parser-ts/char";
-
-type Char = C.Char;
+import { type Char, default as C } from "parser-ts/char";
 
 /**
  * 読点を改行強制対象から外す前置文字数の閾値。
