@@ -282,6 +282,16 @@ next line`;
     expect(valid).toBe(false);
   });
 
+  it("読点の前置文字が閾値未満(5文字)ならpassします。", () => {
+    const [valid] = bodyLineBreakPunctuation(buildCommit("あいうえお、続きます。"), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("読点の前置文字が閾値ちょうど(6文字)ならfailします。", () => {
+    const [valid] = bodyLineBreakPunctuation(buildCommit("あいうえおか、続きます。"), "always");
+    expect(valid).toBe(false);
+  });
+
   it("英文カンマが行の途中で前置文字が短ければpassします。", () => {
     const [valid] = bodyLineBreakPunctuation(buildCommit("Hi, world."), "always");
     expect(valid).toBe(true);
@@ -292,6 +302,26 @@ next line`;
       buildCommit("This is a very long preamble, and the rest continues."),
       "always",
     );
+    expect(valid).toBe(false);
+  });
+
+  it("英文カンマの前置文字が閾値未満(5文字)ならpassします。", () => {
+    const [valid] = bodyLineBreakPunctuation(buildCommit("12345, rest of the line."), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("英文カンマの前置文字が閾値ちょうど(6文字)ならfailします。", () => {
+    const [valid] = bodyLineBreakPunctuation(buildCommit("123456, rest of the line."), "always");
+    expect(valid).toBe(false);
+  });
+
+  it("全角カンマの前置文字が閾値未満(5文字)ならpassします。", () => {
+    const [valid] = bodyLineBreakPunctuation(buildCommit("あいうえお，続きます。"), "always");
+    expect(valid).toBe(true);
+  });
+
+  it("全角カンマの前置文字が閾値ちょうど(6文字)ならfailします。", () => {
+    const [valid] = bodyLineBreakPunctuation(buildCommit("あいうえおか，続きます。"), "always");
     expect(valid).toBe(false);
   });
 
