@@ -1,6 +1,6 @@
 import message from "@commitlint/message";
 import type { SyncRule } from "@commitlint/types";
-import { isRight } from "fp-ts/Either";
+import { isLeft, isRight } from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import * as P from "parser-ts/Parser";
 import { stream, type Stream } from "parser-ts/Stream";
@@ -322,7 +322,13 @@ export const bodyLineBreakPunctuation: SyncRule<RegExp> = (parsed, when = "alway
   const anchoredTerminator = anchorAtEnd(value);
 
   const result = bodyParser(anchoredTerminator, negated)(stream(Array.from(body)));
-  const violations: readonly string[] = isRight(result) ? result.right.value : [];
+
+  if (isLeft(result)) {
+    // ブロックを消費するはずなので`Left`にはならないはずなので想定外なので例外を投げます。
+    throw new Error("Unexpected parse failure in bodyLineBreakPunctuation");
+  }
+
+  const violations: readonly string[] = result.right.value;
 
   if (violations.length === 0) {
     return [true];
