@@ -40,6 +40,10 @@ const rules: Partial<RulesConfig & UserRulesConfig> = {
   // 関数などの識別子などを直接コミットメッセージのタイトルに書きたいのでcase識別は無効にします。
   "subject-case": [RuleConfigSeverity.Disabled],
 
+  // bodyの各行は句読点で終わり、句読点があれば改行することを求めます。
+  // 唐突な改行や句読点での改行漏れによる長過ぎる行を抑制します。
+  "body-line-break-punctuation": [RuleConfigSeverity.Error, "always"],
+
   // issue参照のアクションキーワードは小文字単数の`close`と`ref`のみ許可。
   "references-action-enum": [RuleConfigSeverity.Error, "always", allowedActions],
 };

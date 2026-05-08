@@ -15,7 +15,9 @@
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
     "@commitlint/message": "^20.4.3",
-    "@commitlint/types": "^20.5.0"
+    "@commitlint/types": "^20.5.0",
+    "fp-ts": "^2.16.11",
+    "parser-ts": "^0.7.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.5",
