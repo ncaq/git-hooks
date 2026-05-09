@@ -10,26 +10,38 @@ import { gfm } from "micromark-extension-gfm";
 const fromMarkdownOptions: FromMarkdownOptions = { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] };
 
 /**
- * `inlineCode`の中身は中間句読点判定の対象外なので、
- * 段落をテキスト化するときに無害な英字列に置換する。
+ * 中間句読点判定の対象外とする可視テキストを、無害な英字列で囲んでマスクする。
  * 外側のバッククオートはそのまま残し、行末terminatorとしての扱いを維持する。
+ * `inlineCode`、リンク、画像など原典のテキストをそのまま使う要素で共通利用する。
  */
-function inlineCodeToText(value: string): string {
+function maskAsInlineCode(value: string): string {
   return `\`${"x".repeat(value.length)}\``;
 }
 
 /**
  * `paragraph`配下の`PhrasingContent`を文字列として再構築する。
- * `inlineCode`はマスクし、`break`は改行に、入れ子(`emphasis`等)は子要素を再帰的に展開する。
+ * `inlineCode`、リンク(URLおよびリンクテキスト)、画像(altテキスト)はマスクする。
+ * `break`は改行に、入れ子(`emphasis`等)は子要素を再帰的に展開する。
+ *
+ * リンクをマスクするのは、URL自体は当然句読点を含み得るし、
+ * Markdownリンク記法`[title](url)`のtitleも原典のものを使うため句読点が入り得るためです。
+ * 拡張Markdownのオートリンク記法(`<URL>`)やGFM autolink-literalで認識される素のURLも、
+ * mdast上は`link`ノードとなるため同じ扱いになります。
  */
 function phrasingToText(node: PhrasingContent): string {
   switch (node.type) {
     case "text":
       return node.value;
     case "inlineCode":
-      return inlineCodeToText(node.value);
+      return maskAsInlineCode(node.value);
     case "break":
       return "\n";
+    case "link":
+    case "linkReference":
+      return maskAsInlineCode(node.children.map(phrasingToText).join(""));
+    case "image":
+    case "imageReference":
+      return maskAsInlineCode(node.alt ?? "");
     default:
       return "children" in node ? node.children.map(phrasingToText).join("") : "";
   }
