@@ -742,4 +742,87 @@ const x = 1
       expect(valid).toBe(true);
     });
   });
+
+  describe("URLや参照を許可する", () => {
+    it("issueへの番号参照(#123)のみの行は許可されます。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("close #123."), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("文中にissue番号参照(#123)があってもpassします。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("issue #123 を参照する。"), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("URLを単独で貼り付けてもpassします。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("https://github.com/ncaq/git-hooks/issues/91"),
+        "always",
+      );
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("文中にURLを直接貼り付けてもpassします。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("詳細は https://github.com/ncaq/git-hooks/issues/91 を参照。"),
+        "always",
+      );
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("拡張Markdownのオートリンク記法(<URL>)はpassします。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("<https://example.com/foo.html>"), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("文中にオートリンク記法(<URL>)があってもpassします。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("詳細は<https://example.com/foo.html>を参照。"),
+        "always",
+      );
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("Markdownリンク記法のタイトルに句点が含まれていてもpassします。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("[これはタイトル。です](https://example.com/)を参照。"),
+        "always",
+      );
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("Markdownリンク記法のタイトルにカンマが含まれていてもpassします。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("[Hello, world](https://example.com/)を参照。"),
+        "always",
+      );
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("Markdownリンク記法でURL中にドットがあってもpassします。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("[git-hooks](https://github.com/ncaq/git-hooks)を参照。"),
+        "always",
+      );
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("複数のリンクが文中にあってもpassします。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("[a](https://example.com/a)と[b](https://example.com/b)を参照。"),
+        "always",
+      );
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+  });
 });
