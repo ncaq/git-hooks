@@ -282,7 +282,7 @@ second part.`;
   });
 
   it("カスタム正規表現で句点のみ許可するとカンマ終わりはfailします。", () => {
-    const onlyPeriod = /[.。]/u;
+    const onlyPeriod = /(?:[.。])$/u;
     const body = `ends with comma,
 next line.`;
     const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always", onlyPeriod);
