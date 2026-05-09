@@ -153,6 +153,7 @@ function extractParagraphLines(body: string): readonly string[] {
  *
  * 検査対象はmdast上の段落(`paragraph`ノード)に限られる。
  * 空行・リスト項目・コードフェンス内・引用ブロック・見出し(ATX/setext)・水平線・テーブルは段落として扱われないため対象外。
+ * リスト項目直後の行は遅延継続でリスト項目内に取り込まれるため対象外となる。
  *
  * `when="never"`: 行末が`value`の終端文字で終わる行を違反とする。
  */
