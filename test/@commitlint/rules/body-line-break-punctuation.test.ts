@@ -717,6 +717,12 @@ const x = 1
       expect(valid).toBe(true);
     });
 
+    it("インラインコードだけの行は許可されます", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`foo.bar`"), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
     it("複数のインラインコードがあっても中身の句読点は許容されます。", () => {
       const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`foo.bar`と`baz.qux`を比較する。"), "always");
       expect(msg).toBeUndefined();
