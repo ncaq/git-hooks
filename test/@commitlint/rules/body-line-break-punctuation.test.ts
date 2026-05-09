@@ -717,7 +717,7 @@ const x = 1
       expect(valid).toBe(true);
     });
 
-    it("インラインコードだけの行は許可されます", () => {
+    it("インラインコードだけの行は許可されます。", () => {
       const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`foo.bar`"), "always");
       expect(msg).toBeUndefined();
       expect(valid).toBe(true);
