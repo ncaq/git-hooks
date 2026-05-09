@@ -688,4 +688,58 @@ const x = 1
     const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
     expect(valid).toBe(false);
   });
+
+  describe("インラインコード内の句読点は許可される", () => {
+    it("インラインコード内のドットは中間句読点として扱われません。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`foo.bar = enable;`の時はhogeを実行する。"), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("インラインコード内の英文ピリオドは中間句読点として扱われません。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("Use `obj.method()` to call the method."), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("インラインコード内のカンマは中間句読点として扱われません。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`fn(a, b, c, d, e, f, g)`を呼び出す。"), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("インラインコード内の全角句点は中間句読点として扱われません。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("`これは。コード内の。句点です。`を例として示す。"),
+        "always",
+      );
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("インラインコードだけの行は許可されます。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`foo.bar`"), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("複数のインラインコードがあっても中身の句読点は許容されます。", () => {
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`foo.bar`と`baz.qux`を比較する。"), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+
+    it("インラインコード外の中間句点はそのままfailします。", () => {
+      const [valid] = bodyLineBreakPunctuation(buildCommit("`foo.bar`を実行する。続けて。次の処理。"), "always");
+      expect(valid).toBe(false);
+    });
+
+    it("インラインコードが複数行にあっても内部のドットは無視されます。", () => {
+      const body = `\`foo.bar = enable;\`の時はhogeを実行する。
+\`baz.qux = disable;\`の時はfugaを実行する。`;
+      const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+      expect(msg).toBeUndefined();
+      expect(valid).toBe(true);
+    });
+  });
 });
