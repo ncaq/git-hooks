@@ -158,6 +158,9 @@ function isLineViolation(line: string, anchoredTerminator: RegExp, negated: bool
  * 段落内の`inlineCode`(バッククオート囲み)の中身も中間句読点判定の対象外となる。
  *
  * `when="never"`: 行末が`value`の終端文字で終わる行を違反とする。
+ * neverモードの実用性が全く分からないので、
+ * 一応慣習に従って実装はしますが、
+ * 真面目に検査していません。
  */
 export const bodyLineBreakPunctuation: SyncRule<RegExp> = (parsed, when = "always", value = defaultTerminator) => {
   const body = parsed.body;
