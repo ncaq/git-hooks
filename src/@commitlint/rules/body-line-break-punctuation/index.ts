@@ -30,7 +30,7 @@ function selectViolations(body: string, negated: boolean, anchoredTerminator: Re
  * コミットメッセージ`body`の唐突な改行を抑制するルール。
  *
  * `when="always"`: 各行は以下の条件を全て満たす必要がある。
- * - 行末が`value`の終端文字で終わる
+ * - 行末が`anchoredTerminator`で終わる
  * - 行の途中に句点(`.`/`。`/`．`)が無い
  * - 行の途中の読点(`,`/`，`/`、`)は前置文字数が閾値未満のときのみ許容する
  *
@@ -39,7 +39,7 @@ function selectViolations(body: string, negated: boolean, anchoredTerminator: Re
  * リスト項目直後の行は遅延継続でリスト項目内に取り込まれるため対象外となる。
  * 段落内の`inlineCode`(バッククオート囲み)の中身も中間句読点判定の対象外となる。
  *
- * `when="never"`: 行末が`value`の終端文字で終わる行を違反とする。
+ * `when="never"`: 行末が`anchoredTerminator`で終わる行を違反とする。
  * neverモードの実用性が全く分からないので、
  * 一応慣習に従って実装はしますが、
  * 真面目に検査していません。
