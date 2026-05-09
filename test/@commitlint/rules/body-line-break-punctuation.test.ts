@@ -593,7 +593,7 @@ const x = 1
     expect(valid).toBe(true);
   });
 
-  it("4スペース以上インデントしたバッククオートはフェンスとして認識されず内側が検査対象になります。", () => {
+  it("4スペース以上インデントしたバッククオートはインデントコードブロックとして対象外です。", () => {
     const body = `コード:
 
     \`\`\`
@@ -601,8 +601,9 @@ const x = 1
     \`\`\`
 
 末尾。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
-    expect(valid).toBe(false);
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
+    expect(valid).toBe(true);
   });
 
   it("番号付きリストの`1)`形式も対象外です。", () => {
@@ -671,20 +672,20 @@ const x = 1
     expect(valid).toBe(false);
   });
 
-  it("段落行がリスト項目の場合setext見出しとして扱われずsetextHeadingBlockがロールバックします。", () => {
+  it("リスト項目に続く下線とテキストは遅延継続でリスト項目内に取り込まれ対象外です。", () => {
     const body = `- 項目
 ======
 句読点なしの行`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
-    expect(valid).toBe(false);
-  });
-
-  it("孤立した下線行のみが出現してもexemptLineBlockで対象外として扱われます。", () => {
-    const body = `======
-
-本文。`;
     const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
     expect(msg).toBeUndefined();
     expect(valid).toBe(true);
+  });
+
+  it("孤立した下線風の行は単なる段落として扱われ句読点なしならfailします。", () => {
+    const body = `======
+
+本文。`;
+    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(valid).toBe(false);
   });
 });

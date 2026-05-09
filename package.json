@@ -17,11 +17,15 @@
     "@commitlint/message": "^20.4.3",
     "@commitlint/types": "^20.5.0",
     "fp-ts": "^2.16.11",
+    "mdast-util-from-markdown": "^2.0.3",
+    "mdast-util-gfm": "^3.1.0",
+    "micromark-extension-gfm": "^3.0.0",
     "parser-ts": "^0.7.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.5",
     "@eslint/js": "^10.0.1",
+    "@types/mdast": "^4.0.4",
     "@types/node": "^22.19.17",
     "conventional-commits-parser": "^6.4.0",
     "eslint": "^10.2.1",
