@@ -8,17 +8,20 @@ function buildCommit(body: string | null): Commit {
 
 describe("bodyLineBreakPunctuation", () => {
   it("bodyがnullならpassします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit(null), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(null), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("bodyが空文字ならpassします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit(""), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(""), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("単一行で句点で終わるbodyはpassします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("単一行で句点で終わる。"), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("単一行で句点で終わる。"), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -31,7 +34,8 @@ describe("bodyLineBreakPunctuation", () => {
     const body = `1行目です。
 2行目です。
 3行目です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -39,35 +43,40 @@ describe("bodyLineBreakPunctuation", () => {
     const body = `First line.
 Second line.
 Third line.`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("読点で終わって続く行もpassします。", () => {
     const body = `読点で終わって、
 次の行に続く。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("カンマで終わって続く行もpassします。", () => {
     const body = `ends with comma,
 next line.`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("疑問符で終わる行はpassします。", () => {
     const body = `本当ですか？
 本当です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("感嘆符で終わる行はpassします。", () => {
     const body = `Wow!
 それは凄い。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -104,7 +113,8 @@ but still continues.`;
     const body = `段落1の終わり。
 
 段落2の始まり。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -122,7 +132,8 @@ but still continues.`;
 - 項目1
 - 項目2
 - 項目3`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -132,7 +143,8 @@ but still continues.`;
 * 項目1
 * 項目2
 * 項目3`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -142,7 +154,8 @@ but still continues.`;
 + 項目1
 + 項目2
 + 項目3`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -152,7 +165,8 @@ but still continues.`;
 1. 最初
 2. 次
 3. 最後`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -162,7 +176,8 @@ but still continues.`;
 - 親項目
   - 子項目1
   - 子項目2`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -176,7 +191,8 @@ function foo() {
 \`\`\`
 
 以上です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -189,7 +205,8 @@ const y = 2
 \`\`\`
 
 以上です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -211,7 +228,8 @@ const x = 1
 \`\`\`
 const x = 1
 const y = 2`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -219,14 +237,16 @@ const y = 2`;
     const body = `次の通りです:
 
 - 項目`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("セミコロンで終わる行はpassします。", () => {
     const body = `first part;
 second part.`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -279,7 +299,8 @@ next line.`;
   it("when=neverで句読点なしの行はpassします。", () => {
     const body = `no punctuation
 next line`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "never");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "never");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -296,7 +317,8 @@ next line`;
   it("全角句点で終わる行はpassします。", () => {
     const body = `1行目です．
 2行目です．`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -308,12 +330,14 @@ next line`;
   it("全角カンマで終わる行はpassします。", () => {
     const body = `読点で終わる，
 次の行に続く．`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("読点が行の途中で前置文字が短ければpassします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("また、続きを書きます。"), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("また、続きを書きます。"), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -323,7 +347,8 @@ next line`;
   });
 
   it("読点の前置文字が閾値未満(5文字)ならpassします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("あいうえお、続きます。"), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("あいうえお、続きます。"), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -333,7 +358,8 @@ next line`;
   });
 
   it("英文カンマが行の途中で前置文字が短ければpassします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("Hi, world."), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("Hi, world."), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -346,7 +372,8 @@ next line`;
   });
 
   it("英文カンマの前置文字が閾値未満(5文字)ならpassします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("12345, rest of the line."), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("12345, rest of the line."), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -356,7 +383,8 @@ next line`;
   });
 
   it("全角カンマの前置文字が閾値未満(5文字)ならpassします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("あいうえお，続きます。"), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("あいうえお，続きます。"), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -366,29 +394,34 @@ next line`;
   });
 
   it("コロンが行の途中にあるのは許容されます。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("key: value here."), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("key: value here."), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("セミコロンが行の途中にあるのは許容されます。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("first; second; third."), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("first; second; third."), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("疑問符が行の途中にあるのは許容されます。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("Really? Yes indeed."), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("Really? Yes indeed."), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("感嘆符が行の途中にあるのは許容されます。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("Wow! Amazing thing!"), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("Wow! Amazing thing!"), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
   it("句点が行末ならば違反ではありません。", () => {
     const body = `1文目です。
 2文目です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -405,7 +438,8 @@ next line`;
 > 文中に。句点もある
 
 以上です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -416,7 +450,8 @@ next line`;
   > 続く
 
 末尾です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -424,7 +459,8 @@ next line`;
     const body = `# 見出し
 
 本文の最後。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -436,7 +472,8 @@ next line`;
 ### 見出し3
 
 本文。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -446,7 +483,8 @@ next line`;
 ---
 
 区切り後。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -456,7 +494,8 @@ next line`;
 ***
 
 区切り後。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -466,7 +505,8 @@ next line`;
 ___
 
 区切り後。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -478,7 +518,8 @@ const x = 1
 ~~~
 
 以上です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -490,7 +531,8 @@ const x = 1
   \`\`\`
 
 以上です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -504,7 +546,8 @@ const x = 1
 \`\`\`\`
 
 以上です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -516,7 +559,8 @@ const x = 1
 ~~~
 
 本文の終わり。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -530,7 +574,8 @@ const x = 1
 \`\`\`\`\`
 
 末尾です。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -543,7 +588,8 @@ const x = 1
 ~~~
 
 本文の終わり。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -565,7 +611,8 @@ const x = 1
 1) 最初
 2) 次
 3) 最後`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -574,7 +621,8 @@ const x = 1
 ======
 
 本文の最後。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -583,7 +631,8 @@ const x = 1
 ------
 
 本文の最後。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -597,7 +646,8 @@ const x = 1
 ------
 
 本文2。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -606,7 +656,8 @@ const x = 1
 ============
 
 本文。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 
@@ -632,7 +683,8 @@ const x = 1
     const body = `======
 
 本文。`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
 });
