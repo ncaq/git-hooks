@@ -2,13 +2,13 @@ import message from "@commitlint/message";
 import type { SyncRule } from "@commitlint/types";
 import { isRight } from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
-import type { Root } from "mdast";
+import type { Paragraph, PhrasingContent, Root } from "mdast";
 import { fromMarkdown, type Options as FromMarkdownOptions } from "mdast-util-from-markdown";
 import { gfmFromMarkdown } from "mdast-util-gfm";
 import { gfm } from "micromark-extension-gfm";
 import * as P from "parser-ts/Parser";
 import { stream, type Stream } from "parser-ts/Stream";
-import { type Char } from "parser-ts/char";
+import * as C from "parser-ts/char";
 
 /**
  * 読点を改行強制対象から外す前置文字数の閾値。
@@ -16,16 +16,8 @@ import { type Char } from "parser-ts/char";
  */
 const commaPrefixThreshold = 6 as const;
 
-const periodChars = ".。．" as const;
+const punctuationChars = ".。．,，、" as const;
 const commaChars = ",，、" as const;
-
-function isPeriod(c: Char): boolean {
-  return periodChars.includes(c);
-}
-
-function isComma(c: Char): boolean {
-  return commaChars.includes(c);
-}
 
 /**
  * 行末として許容する終端文字のデフォルト集合。
@@ -39,79 +31,6 @@ function anchorAtEnd(terminator: RegExp): RegExp {
   return new RegExp(`(?:${terminator.source})$`, "u");
 }
 
-/** 残り2文字以上あることを先読みで確認する(消費はしない)。 */
-const hasNextChar: P.Parser<Char, void> = P.lookAhead(
-  pipe(
-    P.item<Char>(),
-    P.chain(() => P.item<Char>()),
-    P.map<Char, void>(() => undefined),
-  ),
-);
-
-/**
- * 中間として安全な1文字を消費する。
- *
- * - 残り1文字以下のときは「最終文字」とみなしてここでは消費しない。
- * - 句点であれば中間禁止なので失敗。
- * - 読点で位置が`commaPrefixThreshold`以上なら中間禁止なので失敗。
- */
-const midLineSafeChar: P.Parser<Char, Char> = pipe(
-  hasNextChar,
-  P.chain(() =>
-    pipe(
-      P.withStart(P.item<Char>()),
-      P.filter(([ch, start]: [Char, Stream<Char>]) => {
-        if (isPeriod(ch)) return false;
-        if (isComma(ch) && start.cursor >= commaPrefixThreshold) return false;
-        return true;
-      }),
-      P.map(([ch]) => ch),
-    ),
-  ),
-);
-
-/**
- * 行を「中間禁止文字なし」として読み切るパーサ。
- *
- * 中間文字を可能な限り消費した後、最終1文字を任意の文字として消費する(空行は許容)。
- */
-const noMidLinePunctuation: P.Parser<Char, void> = pipe(
-  P.many(midLineSafeChar),
-  P.chain(() =>
-    P.either(
-      pipe(
-        P.eof<Char>(),
-        P.map<void, void>(() => undefined),
-      ),
-      () =>
-        pipe(
-          P.item<Char>(),
-          P.chainFirst(() => P.eof<Char>()),
-          P.map<Char, void>(() => undefined),
-        ),
-    ),
-  ),
-);
-
-/** 行に中間句読点が無いかを判定する。 */
-function hasNoMidLinePunctuation(line: string): boolean {
-  const result = noMidLinePunctuation(stream(Array.from(line)));
-  return isRight(result);
-}
-
-/**
- * 個別の行が違反であるかを判定する。
- *
- * `negated`が真のとき終端の有無のみで判定し、偽のときは中間句読点も併せて判定する。
- */
-function isLineViolation(line: string, anchoredTerminator: RegExp, negated: boolean): boolean {
-  const endsWithTerminator = anchoredTerminator.test(line);
-  if (negated) {
-    return endsWithTerminator;
-  }
-  return !endsWithTerminator || !hasNoMidLinePunctuation(line);
-}
-
 /**
  * コミットメッセージで受け付けるマークダウンの設定。
  * `readonly`を受け付けないので`as const`は使えない。
@@ -119,26 +38,108 @@ function isLineViolation(line: string, anchoredTerminator: RegExp, negated: bool
 const fromMarkdownOptions: FromMarkdownOptions = { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] };
 
 /**
- * bodyから検査対象となる段落の各行を、出現順に抽出する。
- * bodyをMarkdown(GFM拡張込み)としてパースし、
- * ルートノードの段落のみを対象に元のソースから該当行を切り出す。
- * リスト・引用・コードブロック・見出し(ATX/setext)・水平線・テーブルなどは、
- * `paragraph`ノードにならないため、
- * この抽出から自然に除外される。
- * リスト項目や引用ブロック内部にネストする段落も、
- * ルート直下ではないので対象外となる。
+ * `inlineCode`の中身は中間句読点判定の対象外なので、
+ * 段落をテキスト化するときに無害な英字列に置換する。
+ * 外側のバッククオートはそのまま残し、行末terminatorとしての扱いを維持する。
  */
-function extractParagraphLines(body: string): readonly string[] {
+function inlineCodeToText(value: string): string {
+  return `\`${"x".repeat(value.length)}\``;
+}
+
+/**
+ * `paragraph`配下の`PhrasingContent`を文字列として再構築する。
+ * `inlineCode`はマスクし、`break`は改行に、入れ子(`emphasis`等)は子要素を再帰的に展開する。
+ */
+function phrasingToText(node: PhrasingContent): string {
+  switch (node.type) {
+    case "text":
+      return node.value;
+    case "inlineCode":
+      return inlineCodeToText(node.value);
+    case "break":
+      return "\n";
+    default:
+      return "children" in node ? node.children.map(phrasingToText).join("") : "";
+  }
+}
+
+/**
+ * `paragraph`をsoftbreak/hardbreakで分割した行の配列に変換する。
+ * mdastの段落内では`text`ノード中の`\n`がsoftbreakを表すため、
+ * `phrasingToText`で連結した結果を`\n`で分割すれば論理行が得られる。
+ */
+function paragraphToLines(paragraph: Paragraph): readonly string[] {
+  return paragraph.children.map(phrasingToText).join("").split("\n");
+}
+
+/**
+ * bodyから検査対象となる段落の各行を、出現順に抽出する。
+ * bodyをMarkdown(GFM拡張込み)としてパースし、ルート直下の`paragraph`のみを対象とする。
+ * リスト・引用・コードブロック・見出し(ATX/setext)・水平線・テーブルなどは
+ * `paragraph`にならず自然に除外される。
+ * リスト項目や引用ブロック内部にネストする段落も、ルート直下ではないので対象外。
+ */
+function extractLines(body: string): readonly string[] {
   const tree: Root = fromMarkdown(body, fromMarkdownOptions);
-  const sourceLines = body.split("\n");
-  return tree.children.flatMap((child) => {
-    if (child.type !== "paragraph" || child.position == null) {
-      return [];
-    }
-    const startLine = child.position.start.line - 1;
-    const endLine = child.position.end.line - 1;
-    return sourceLines.slice(startLine, endLine + 1);
-  });
+  return tree.children.flatMap((child) => (child.type === "paragraph" ? paragraphToLines(child) : []));
+}
+
+/**
+ * 句読点ではない文字を1文字以上連続で消費し、消費した文字列を返す。
+ * 1ステップで可能な限り長くマッチさせるため、1文字単位ではなく文字列単位の処理になる。
+ */
+const safeRun: P.Parser<C.Char, string> = C.many1(C.notOneOf(punctuationChars));
+
+/**
+ * 短い前置きの後の読点(1文字)を消費する。
+ * 開始位置が`commaPrefixThreshold`未満のときのみ成功する。
+ */
+const earlyComma: P.Parser<C.Char, string> = pipe(
+  P.withStart(C.oneOf(commaChars)),
+  P.filter(([, start]: [string, Stream<C.Char>]) => start.cursor < commaPrefixThreshold),
+  P.map(([s]) => s),
+);
+
+/**
+ * 中間として消費可能な1ステップ。
+ * 必ず1文字以上消費するので、`many`しても無限ループにならない。
+ */
+const midStep: P.Parser<C.Char, string> = P.either(safeRun, () => earlyComma);
+
+/**
+ * 「中間句読点なし」の行を読み切るパーサ。
+ * 中間ステップを0回以上消費した後、最終1文字を任意に消費して終わる(空行も許容)。
+ */
+const noMidLinePunctuation: P.Parser<C.Char, void> = pipe(
+  P.many(midStep),
+  P.chain(() =>
+    P.either(
+      pipe(
+        P.eof<C.Char>(),
+        P.map<void, void>(() => undefined),
+      ),
+      () =>
+        pipe(
+          P.item<C.Char>(),
+          P.chainFirst(() => P.eof<C.Char>()),
+          P.map<C.Char, void>(() => undefined),
+        ),
+    ),
+  ),
+);
+
+/** 行に中間句読点が無いかを判定する。 */
+function hasNoMidLinePunctuation(line: string): boolean {
+  return isRight(noMidLinePunctuation(stream(Array.from(line))));
+}
+
+/** 個別の行が違反であるかを判定する。 */
+function isLineViolation(line: string, anchoredTerminator: RegExp, negated: boolean): boolean {
+  const endsWithTerminator = anchoredTerminator.test(line);
+  if (negated) {
+    return endsWithTerminator;
+  }
+  return !endsWithTerminator || !hasNoMidLinePunctuation(line);
 }
 
 /**
@@ -154,6 +155,7 @@ function extractParagraphLines(body: string): readonly string[] {
  * 検査対象はmdast上の段落(`paragraph`ノード)に限られる。
  * 空行・リスト項目・コードフェンス内・引用ブロック・見出し(ATX/setext)・水平線・テーブルは段落として扱われないため対象外。
  * リスト項目直後の行は遅延継続でリスト項目内に取り込まれるため対象外となる。
+ * 段落内の`inlineCode`(バッククオート囲み)の中身も中間句読点判定の対象外となる。
  *
  * `when="never"`: 行末が`value`の終端文字で終わる行を違反とする。
  */
@@ -166,7 +168,7 @@ export const bodyLineBreakPunctuation: SyncRule<RegExp> = (parsed, when = "alway
   const negated = when === "never";
   const anchoredTerminator = anchorAtEnd(value);
 
-  const violations = extractParagraphLines(body).filter((line) => isLineViolation(line, anchoredTerminator, negated));
+  const violations = extractLines(body).filter((line) => isLineViolation(line, anchoredTerminator, negated));
 
   if (violations.length === 0) {
     return [true];
