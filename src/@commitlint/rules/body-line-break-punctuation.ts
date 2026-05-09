@@ -3,7 +3,7 @@ import type { SyncRule } from "@commitlint/types";
 import { isRight } from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import type { Root } from "mdast";
-import { fromMarkdown } from "mdast-util-from-markdown";
+import { fromMarkdown, type Options as fromMarkdownOptions } from "mdast-util-from-markdown";
 import { gfmFromMarkdown } from "mdast-util-gfm";
 import { gfm } from "micromark-extension-gfm";
 import * as P from "parser-ts/Parser";
@@ -113,6 +113,12 @@ function isLineViolation(line: string, anchoredTerminator: RegExp, negated: bool
 }
 
 /**
+ * コミットメッセージで受け付けるマークダウンの設定。
+ * `readonly`を受け付けないので`as const`は使えない。
+ */
+const fromMarkdownOptions: fromMarkdownOptions = { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] };
+
+/**
  * bodyから検査対象となる段落の各行を、出現順に抽出する。
  * bodyをMarkdown(GFM拡張込み)としてパースし、
  * ルートノードの段落のみを対象に元のソースから該当行を切り出す。
@@ -123,10 +129,7 @@ function isLineViolation(line: string, anchoredTerminator: RegExp, negated: bool
  * ルート直下ではないので対象外となる。
  */
 function extractParagraphLines(body: string): readonly string[] {
-  const tree: Root = fromMarkdown(body, {
-    extensions: [gfm()],
-    mdastExtensions: [gfmFromMarkdown()],
-  });
+  const tree: Root = fromMarkdown(body, fromMarkdownOptions);
   const sourceLines = body.split("\n");
   return tree.children.flatMap((child) => {
     if (child.type !== "paragraph" || child.position == null) {
