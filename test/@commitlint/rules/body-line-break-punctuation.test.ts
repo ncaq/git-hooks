@@ -728,7 +728,7 @@ const x = 1
       expect(valid).toBe(false);
     });
 
-    it("インラインコードが行をまたぐ複数行でも内部のドットは無視されます。", () => {
+    it("インラインコードが複数行にあっても内部のドットは無視されます。", () => {
       const body = `\`foo.bar = enable;\`の時はhogeを実行する。
 \`baz.qux = disable;\`の時はfugaを実行する。`;
       const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
