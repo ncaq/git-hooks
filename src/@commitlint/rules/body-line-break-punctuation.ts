@@ -3,7 +3,7 @@ import type { SyncRule } from "@commitlint/types";
 import { isRight } from "fp-ts/Either";
 import { pipe } from "fp-ts/function";
 import type { Root } from "mdast";
-import { fromMarkdown, type Options as fromMarkdownOptions } from "mdast-util-from-markdown";
+import { fromMarkdown, type Options as FromMarkdownOptions } from "mdast-util-from-markdown";
 import { gfmFromMarkdown } from "mdast-util-gfm";
 import { gfm } from "micromark-extension-gfm";
 import * as P from "parser-ts/Parser";
@@ -116,7 +116,7 @@ function isLineViolation(line: string, anchoredTerminator: RegExp, negated: bool
  * コミットメッセージで受け付けるマークダウンの設定。
  * `readonly`を受け付けないので`as const`は使えない。
  */
-const fromMarkdownOptions: fromMarkdownOptions = { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] };
+const fromMarkdownOptions: FromMarkdownOptions = { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] };
 
 /**
  * bodyから検査対象となる段落の各行を、出現順に抽出する。
