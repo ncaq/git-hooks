@@ -11,11 +11,15 @@ import type { SyncRule } from "@commitlint/types";
  */
 export const referencesActionEnum: SyncRule<readonly string[]> = (parsed, when, value) => {
   if (when == null || (when !== "always" && when !== "never")) {
-    throw new Error("references-action-enum: Invalid rule configuration: when must be 'always' or 'never'");
+    throw new Error(
+      "references-action-enum: Invalid rule configuration: when must be 'always' or 'never'",
+    );
   }
 
   if (!Array.isArray(value) || value.length === 0) {
-    throw new Error("references-action-enum: Invalid rule configuration: value must be a non-empty array");
+    throw new Error(
+      "references-action-enum: Invalid rule configuration: value must be a non-empty array",
+    );
   }
 
   const references = parsed.references;
@@ -28,7 +32,8 @@ export const referencesActionEnum: SyncRule<readonly string[]> = (parsed, when, 
 
   const violations = references.filter(
     (reference) =>
-      reference.action != null && (negated ? value.includes(reference.action) : !value.includes(reference.action)),
+      reference.action != null &&
+      (negated ? value.includes(reference.action) : !value.includes(reference.action)),
   );
   const hasViolation = 0 < violations.length;
   const violationsActions = violations.map((reference) => reference.action).join(", ");
@@ -37,6 +42,10 @@ export const referencesActionEnum: SyncRule<readonly string[]> = (parsed, when, 
 
   return [
     !hasViolation,
-    message([`references action [${violationsActions}]`, mustOrMustNot, `be one of [${ruleValues}]`]),
+    message([
+      `references action [${violationsActions}]`,
+      mustOrMustNot,
+      `be one of [${ruleValues}]`,
+    ]),
   ];
 };

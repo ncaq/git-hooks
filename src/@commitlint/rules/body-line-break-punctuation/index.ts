@@ -20,7 +20,11 @@ function isLineViolation(line: string, negated: boolean, anchoredTerminator: Reg
 }
 
 /** 文字列から違反行を取り出す。 */
-function selectViolations(body: string, negated: boolean, anchoredTerminator: RegExp): readonly string[] {
+function selectViolations(
+  body: string,
+  negated: boolean,
+  anchoredTerminator: RegExp,
+): readonly string[] {
   return extractLines(body).filter((line) => isLineViolation(line, negated, anchoredTerminator));
 }
 
@@ -65,6 +69,10 @@ export const bodyLineBreakPunctuation: SyncRule<RegExp> = (
   const verb = negated ? "must not" : "must";
   return [
     false,
-    message([`body lines [${violations.join(" / ")}]`, verb, "end with punctuation and break after sentences"]),
+    message([
+      `body lines [${violations.join(" / ")}]`,
+      verb,
+      "end with punctuation and break after sentences",
+    ]),
   ];
 };
