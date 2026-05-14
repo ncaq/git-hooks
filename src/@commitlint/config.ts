@@ -43,7 +43,7 @@ const overrideRules = {
   "body-line-break-punctuation": [RuleConfigSeverity.Error, "always"],
 
   "references-action-enum": [RuleConfigSeverity.Error, "always", allowedActions],
-} as const satisfies Partial<UserRulesConfig & UserConfig["rules"]>;
+} as const satisfies UserConfig["rules"] & UserRulesConfig;
 
 export const rules = {
   ...conventionalConfig.rules,
