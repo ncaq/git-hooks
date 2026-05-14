@@ -27,7 +27,6 @@ async function main(): Promise<void> {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`commit-msg: ${msg}`);
     process.exitCode = 1;
-    return;
   }
 }
 
