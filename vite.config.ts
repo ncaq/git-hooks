@@ -13,7 +13,10 @@ const rootDir: string = path.dirname(fileURLToPath(import.meta.url));
 const chmodEntryPlugin: Plugin = {
   name: "chmod-entry",
   async writeBundle(outputOptions, bundle) {
-    const outDir = outputOptions.dir ?? rootDir;
+    const outDir = outputOptions.dir;
+    if (typeof outDir !== "string") {
+      throw new Error("chmod-entry plugin requires outputOptions.dir to be a string");
+    }
     await Promise.all(
       Object.values(bundle).map(async (chunk) => {
         if (chunk.type !== "chunk" || !chunk.isEntry) {
