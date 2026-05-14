@@ -67,9 +67,9 @@
 
             ./.editorconfig
             ./.gitignore
-            ./commitlint.config.ts
             ./eslint.config.ts
             ./tsconfig.json
+            ./vite.config.ts
           ];
 
           tsRoot = lib.fileset.toSource {
@@ -95,35 +95,31 @@
             pname = "git-hooks";
             version = "0.1.0";
 
-            src = ./.;
+            src = tsRoot;
 
-            npmDeps = pkgs.importNpmLock { npmRoot = ./.; };
+            npmDeps = pkgs.importNpmLock { inherit npmRoot; };
             inherit (pkgs.importNpmLock) npmConfigHook;
 
             nativeBuildInputs = [ pkgs.makeWrapper ];
-
-            dontNpmBuild = true;
 
             installPhase = ''
               runHook preInstall
 
               mkdir -p $out/lib/git-hooks
 
-              ln -s ${nodeModules}/node_modules $out/lib/git-hooks/node_modules
-
-              cp -r ${./hooks} $out/lib/git-hooks/hooks
+              cp -r dist $out/lib/git-hooks/dist
               cp -r ${./script} $out/lib/git-hooks/script
-              cp -r src $out/lib/git-hooks/
 
-              cp commitlint.config.ts $out/lib/git-hooks/
-              cp package.json $out/lib/git-hooks/
+              chmod +x \
+                $out/lib/git-hooks/dist/hooks/commit-msg \
+                $out/lib/git-hooks/dist/hooks/post-merge
 
               runHook postInstall
             '';
 
             postFixup = ''
-              for exec in $out/lib/git-hooks/hooks/commit-msg \
-                          $out/lib/git-hooks/hooks/post-merge \
+              for exec in $out/lib/git-hooks/dist/hooks/commit-msg \
+                          $out/lib/git-hooks/dist/hooks/post-merge \
                           $out/lib/git-hooks/script/delete-merged-branch; do
                 wrapProgram "$exec" --prefix PATH : ${
                   lib.makeBinPath (

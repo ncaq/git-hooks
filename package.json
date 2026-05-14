@@ -2,11 +2,13 @@
   "private": true,
   "type": "module",
   "imports": {
+    "#commitlint/*": "./src/@commitlint/*.ts",
     "#commitlint-rules": "./src/@commitlint/rules/index.ts",
     "#commitlint-rules/*": "./src/@commitlint/rules/*.ts",
     "#commitlint-rules/body-line-break-punctuation": "./src/@commitlint/rules/body-line-break-punctuation/index.ts"
   },
   "scripts": {
+    "build": "vite build",
     "fix": "run-p fix:*",
     "fix:eslint": "eslint --fix .",
     "fix:prettier": "prettier --write .",
@@ -17,8 +19,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
+    "@commitlint/format": "^20.5.0",
+    "@commitlint/lint": "^20.5.3",
     "@commitlint/message": "^20.4.3",
     "@commitlint/types": "^20.5.0",
     "fp-ts": "^2.16.11",
@@ -43,6 +46,7 @@
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.1",
+    "vite": "^8.0.10",
     "vitest": "^4.1.5"
   },
   "engines": {
