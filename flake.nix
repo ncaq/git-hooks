@@ -110,10 +110,6 @@
               cp -r dist $out/lib/git-hooks/dist
               cp -r ${./script} $out/lib/git-hooks/script
 
-              chmod +x \
-                $out/lib/git-hooks/dist/hooks/commit-msg \
-                $out/lib/git-hooks/dist/hooks/post-merge
-
               runHook postInstall
             '';
 

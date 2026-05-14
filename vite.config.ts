@@ -1,15 +1,36 @@
+import { chmod } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Plugin } from "vite";
 import { configDefaults, defineConfig } from "vitest/config";
 
 /** ESM環境で利用可能な`__dirname`相当のディレクトリパス。 */
 const rootDir: string = path.dirname(fileURLToPath(import.meta.url));
 
 /**
+ * エントリチャンクとして書き出された成果物に実行属性を付与するviteプラグイン。
+ */
+const chmodEntryPlugin: Plugin = {
+  name: "chmod-entry",
+  async writeBundle(outputOptions, bundle) {
+    const outDir = outputOptions.dir ?? rootDir;
+    await Promise.all(
+      Object.values(bundle).map(async (chunk) => {
+        if (chunk.type !== "chunk" || !chunk.isEntry) {
+          return;
+        }
+        await chmod(path.join(outDir, chunk.fileName), 0o755);
+      }),
+    );
+  },
+};
+
+/**
  * Node.js向けのCLIバンドル設定。
  */
 export default defineConfig({
   root: rootDir,
+  plugins: [chmodEntryPlugin],
   build: {
     target: "node22",
     ssr: true,
