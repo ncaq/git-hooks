@@ -6,20 +6,27 @@ import { lintOptions, rules } from "#commitlint/config";
 
 /** commitlintをプログラムから実行して結果を出力します。 */
 async function main(): Promise<void> {
-  const editmsgFile = argv[2];
-  if (editmsgFile == null) {
-    throw new Error("commit-msg: missing commit message file argument");
+  try {
+    const editmsgFile = argv[2];
+    if (editmsgFile == null) {
+      throw new Error("commit-msg: missing commit message file argument");
+    }
+
+    const message = await readFile(editmsgFile, "utf8");
+    const outcome = await lint(message, rules, lintOptions);
+
+    const hasProblem = !outcome.valid || 0 < outcome.errors.length || 0 < outcome.warnings.length;
+    if (hasProblem) {
+      stderr.write(`${format({ results: [outcome] }, { color: true })}\n`);
+    }
+
+    process.exitCode = outcome.valid ? 0 : 1;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`commit-msg: ${msg}`);
+    process.exitCode = 1;
+    return;
   }
-
-  const message = await readFile(editmsgFile, "utf8");
-  const outcome = await lint(message, rules, lintOptions);
-
-  const hasProblem = !outcome.valid || 0 < outcome.errors.length || 0 < outcome.warnings.length;
-  if (hasProblem) {
-    stderr.write(`${format({ results: [outcome] }, { color: true })}\n`);
-  }
-
-  process.exitCode = outcome.valid ? 0 : 1;
 }
 
 await main();
