@@ -28,7 +28,7 @@ const rejectedActions = [
 ] as const;
 
 /**
- * `commitlint.config.ts`から取り込んだルール上書き設定。
+ * 個人的に利用するルール。
  * `@commitlint/config-conventional`のルールに重ねがけして最終ルール集合を作る。
  */
 const overrideRules = {
