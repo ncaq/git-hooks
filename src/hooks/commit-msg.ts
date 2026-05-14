@@ -19,7 +19,7 @@ async function main(): Promise<void> {
     const hasWarning = 0 < outcome.warnings.length;
 
     if (hasError || hasWarning) {
-      stderr.write(`${format({ results: [outcome] }, { color: true })}\n`);
+      stderr.write(`${format({ results: [outcome] })}\n`);
     }
 
     process.exitCode = hasError ? 1 : 0;
