@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(dirname "$0")"
+project_root="$(realpath "$script_dir/..")"
+
+"$project_root"/script/delete-merged-branch
