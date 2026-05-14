@@ -1,9 +1,6 @@
 import type { RulesConfig, UserConfig } from "@commitlint/types";
 import { RuleConfigSeverity } from "@commitlint/types";
-import {
-  plugin as userPlugin,
-  type RulesConfig as UserRulesConfig,
-} from "./src/@commitlint/rules/index";
+import { plugin as userPlugin, type RulesConfig as UserRulesConfig } from "#commitlint-rules";
 
 /**
  * コミットメッセージで許可するissue参照キーワード。

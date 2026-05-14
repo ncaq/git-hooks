@@ -1,7 +1,7 @@
 import type { Commit, CommitBase, CommitReference } from "conventional-commits-parser";
 import { createCommitObject } from "conventional-commits-parser";
 import { describe, expect, it } from "vitest";
-import { referencesActionEnum } from "../../../src/@commitlint/rules/references-action-enum";
+import { referencesActionEnum } from "#commitlint-rules/references-action-enum";
 
 function buildReference(overrides: Partial<CommitReference> = {}): CommitReference {
   return {

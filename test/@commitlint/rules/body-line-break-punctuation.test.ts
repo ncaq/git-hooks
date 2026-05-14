@@ -1,6 +1,6 @@
 import { createCommitObject, type Commit } from "conventional-commits-parser";
 import { describe, expect, it } from "vitest";
-import { bodyLineBreakPunctuation } from "../../../src/@commitlint/rules/body-line-break-punctuation";
+import { bodyLineBreakPunctuation } from "#commitlint-rules/body-line-break-punctuation";
 
 function buildCommit(body: string | null): Commit {
   return createCommitObject({ header: "feat: x", body });

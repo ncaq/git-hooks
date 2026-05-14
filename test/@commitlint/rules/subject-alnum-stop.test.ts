@@ -1,6 +1,6 @@
 import { createCommitObject, type Commit } from "conventional-commits-parser";
 import { describe, expect, it } from "vitest";
-import { subjectAlnumStop } from "../../../src/@commitlint/rules/subject-alnum-stop";
+import { subjectAlnumStop } from "#commitlint-rules/subject-alnum-stop";
 
 function buildCommit(header: string | null): Commit {
   return createCommitObject({ header });
