@@ -42,13 +42,16 @@
         let
           inherit (pkgs) nodejs;
 
+          npmFileset = lib.fileset.unions [
+            ./package.json
+            ./package-lock.json
+          ];
+
           npmRoot = lib.fileset.toSource {
             root = ./.;
-            fileset = lib.fileset.unions [
-              ./package.json
-              ./package-lock.json
-            ];
+            fileset = npmFileset;
           };
+
           nodeModules = pkgs.importNpmLock.buildNodeModules {
             inherit
               nodejs
@@ -56,21 +59,22 @@
               ;
           };
 
-          tsSrc = lib.fileset.toSource {
+          tsFileset = lib.fileset.unions [
+            npmFileset
+
+            ./src
+            ./test
+
+            ./.editorconfig
+            ./.gitignore
+            ./commitlint.config.ts
+            ./eslint.config.ts
+            ./tsconfig.json
+          ];
+
+          tsRoot = lib.fileset.toSource {
             root = ./.;
-            fileset = lib.fileset.unions [
-              ./src
-              ./script
-              ./test
-              ./.editorconfig
-              ./.gitignore
-              ./commit-msg
-              ./commitlint.config.ts
-              ./eslint.config.ts
-              ./package.json
-              ./post-merge
-              ./tsconfig.json
-            ];
+            fileset = tsFileset;
           };
 
           # npm run経由でスクリプト実行を簡単にするためのヘルパー。
@@ -81,7 +85,7 @@
                 nativeBuildInputs = [ nodejs ];
               }
               ''
-                cp -r ${tsSrc}/. .
+                cp -r ${tsRoot}/. .
                 ln -s ${nodeModules}/node_modules node_modules
                 npm run ${script}
                 touch $out
@@ -106,19 +110,22 @@
               mkdir -p $out/lib/git-hooks
 
               ln -s ${nodeModules}/node_modules $out/lib/git-hooks/node_modules
-              cp -r script $out/lib/git-hooks/
+
+              cp -r ${./hooks} $out/lib/git-hooks/hooks
+              cp -r ${./script} $out/lib/git-hooks/script
               cp -r src $out/lib/git-hooks/
-              cp commit-msg $out/lib/git-hooks/
+
               cp commitlint.config.ts $out/lib/git-hooks/
               cp package.json $out/lib/git-hooks/
-              cp post-merge $out/lib/git-hooks/
 
               runHook postInstall
             '';
 
             postFixup = ''
-              for hook in $out/lib/git-hooks/commit-msg $out/lib/git-hooks/post-merge $out/lib/git-hooks/script/delete-merged-branch; do
-                wrapProgram "$hook" --prefix PATH : ${
+              for exec in $out/lib/git-hooks/hooks/commit-msg \
+                          $out/lib/git-hooks/hooks/post-merge \
+                          $out/lib/git-hooks/script/delete-merged-branch; do
+                wrapProgram "$exec" --prefix PATH : ${
                   lib.makeBinPath (
                     with pkgs;
                     [

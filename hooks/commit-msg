@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(dirname "$0")"
+project_root="$(realpath "$script_dir/..")"
+
+commit_editmsg_file="$(realpath "${1}")"
+
+npm --prefix "$project_root" exec -- \
+  commitlint --config "$project_root/commitlint.config.ts" --edit "$commit_editmsg_file"
