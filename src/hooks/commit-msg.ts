@@ -15,12 +15,14 @@ async function main(): Promise<void> {
     const message = await readFile(editmsgFile, "utf8");
     const outcome = await lint(message, rules, lintOptions);
 
-    const hasProblem = !outcome.valid || 0 < outcome.errors.length || 0 < outcome.warnings.length;
-    if (hasProblem) {
+    const hasError = 0 < outcome.errors.length;
+    const hasWarning = 0 < outcome.warnings.length;
+
+    if (hasError || hasWarning) {
       stderr.write(`${format({ results: [outcome] }, { color: true })}\n`);
     }
 
-    process.exitCode = outcome.valid ? 0 : 1;
+    process.exitCode = hasError ? 1 : 0;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`commit-msg: ${msg}`);
