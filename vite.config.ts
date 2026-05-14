@@ -16,7 +16,7 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     minify: false, // コミットが拒否された時LLMが調査することがあるのであえてminifyしない。
-    sourcemap: true,
+    sourcemap: false, // minifyが無効なので生成しない。無効なリンクを作るリスクを無くす。
     rolldownOptions: {
       input: {
         "commit-msg": path.join(rootDir, "src/hooks/commit-msg.ts"),
