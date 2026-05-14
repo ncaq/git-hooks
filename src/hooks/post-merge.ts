@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
-import { argv, exit } from "node:process";
+import process, { argv } from "node:process";
 import { fileURLToPath } from "node:url";
 
 /**
@@ -17,12 +17,19 @@ const scriptPath: string = path.resolve(
   "delete-merged-branch",
 );
 
-const result = spawnSync(scriptPath, argv.slice(2), { stdio: "inherit" });
-
-if (result.error != null) {
-  throw new Error(`post-merge: failed to execute ${scriptPath}: ${result.error.message}\n`, {
-    cause: result.error,
-  });
+function main(): void {
+  try {
+    const scriptResult = spawnSync(scriptPath, argv.slice(2), { stdio: "inherit" });
+    if (scriptResult.error != null) {
+      throw new Error(`failed to execute ${scriptPath}: ${scriptResult.error.message}`, {
+        cause: scriptResult.error,
+      });
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`post-merge: ${msg}`);
+    process.exitCode = 1;
+  }
 }
 
-exit(result.status ?? 1);
+main();
