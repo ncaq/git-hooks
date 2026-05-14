@@ -16,8 +16,10 @@ function buildReference(overrides: Partial<CommitReference> = {}): CommitReferen
 }
 
 /**
- * `Commit`は`CommitBase & CommitMeta`の交差型でindex signatureを持つため、リテラルを`Partial<Commit>`に直接渡すと型エラーになる。
- * `Object.assign`で`createCommitObject()`の戻り値に`Partial<CommitBase>`をマージすればキャスト無しで`Commit`値を構築できる。
+ * `Commit`は`CommitBase & CommitMeta`の交差型でindex signatureを持つため、
+ * リテラルを`Partial<Commit>`に直接渡すと型エラーになる。
+ * `Object.assign`で`createCommitObject()`の戻り値に`Partial<CommitBase>`をマージすれば、
+ * キャスト無しで`Commit`値を構築できる。
  */
 function buildCommit(references: CommitReference[]): Commit {
   const overrides: Partial<CommitBase> = { header: "feat: x", references };
