@@ -20,7 +20,11 @@ function isLineViolation(line: string, negated: boolean, anchoredTerminator: Reg
 }
 
 /** 文字列から違反行を取り出す。 */
-function selectViolations(body: string, negated: boolean, anchoredTerminator: RegExp): readonly string[] {
+function selectViolations(
+  body: string,
+  negated: boolean,
+  anchoredTerminator: RegExp,
+): readonly string[] {
   return extractLines(body).filter((line) => isLineViolation(line, negated, anchoredTerminator));
 }
 
@@ -35,7 +39,8 @@ function selectViolations(body: string, negated: boolean, anchoredTerminator: Re
  * - 行の途中の読点(`,`/`，`/`、`)は前置文字数が閾値未満のときのみ許容する
  *
  * 検査対象はmdast上の段落(`paragraph`ノード)に限られる。
- * 空行・リスト項目・コードフェンス内・引用ブロック・見出し(ATX/setext)・水平線・テーブルは段落として扱われないため対象外。
+ * 空行・リスト項目・コードフェンス内・引用ブロック・見出し(ATX/setext)・水平線・テーブルは、
+ * 段落として扱われないため対象外。
  * リスト項目直後の行は遅延継続でリスト項目内に取り込まれるため対象外となる。
  * 段落内の`inlineCode`(バッククオート囲み)の中身も中間句読点判定の対象外となる。
  *
@@ -65,6 +70,10 @@ export const bodyLineBreakPunctuation: SyncRule<RegExp> = (
   const verb = negated ? "must not" : "must";
   return [
     false,
-    message([`body lines [${violations.join(" / ")}]`, verb, "end with punctuation and break after sentences"]),
+    message([
+      `body lines [${violations.join(" / ")}]`,
+      verb,
+      "end with punctuation and break after sentences",
+    ]),
   ];
 };

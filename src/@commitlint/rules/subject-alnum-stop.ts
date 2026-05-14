@@ -7,7 +7,11 @@ import type { SyncRule } from "@commitlint/types";
  * 句読点など記号は無しがデフォルト。
  * インラインコード記法を許可するため特別にバッククオートだけは許可する。
  */
-export const subjectAlnumStop: SyncRule<RegExp> = (parsed, when = "always", value = /[^\p{Letter}\p{Number}`]/u) => {
+export const subjectAlnumStop: SyncRule<RegExp> = (
+  parsed,
+  when = "always",
+  value = /[^\p{Letter}\p{Number}`]/u,
+) => {
   const header = parsed.header;
   if (header == null) {
     return [true];
@@ -26,5 +30,8 @@ export const subjectAlnumStop: SyncRule<RegExp> = (parsed, when = "always", valu
   const negated = when === "never";
   const hasStop = value.test(lastChar);
 
-  return [negated ? !hasStop : hasStop, message(["subject", negated ? "may not" : "must", "end with alnum stop"])];
+  return [
+    negated ? !hasStop : hasStop,
+    message(["subject", negated ? "may not" : "must", "end with alnum stop"]),
+  ];
 };

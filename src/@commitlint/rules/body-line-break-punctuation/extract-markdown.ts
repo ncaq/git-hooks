@@ -7,7 +7,10 @@ import { gfm } from "micromark-extension-gfm";
  * コミットメッセージで受け付けるマークダウンの設定。
  * `readonly`を受け付けないので`as const`は使えない。
  */
-const fromMarkdownOptions: FromMarkdownOptions = { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] };
+const fromMarkdownOptions: FromMarkdownOptions = {
+  extensions: [gfm()],
+  mdastExtensions: [gfmFromMarkdown()],
+};
 
 /**
  * 中間句読点判定の対象外とする可視テキストを、無害な英字列で囲んでマスクする。
@@ -65,5 +68,7 @@ function paragraphToLines(paragraph: Paragraph): readonly string[] {
  */
 export function extractLines(body: string): readonly string[] {
   const tree: Root = fromMarkdown(body, fromMarkdownOptions);
-  return tree.children.flatMap((child) => (child.type === "paragraph" ? paragraphToLines(child) : []));
+  return tree.children.flatMap((child) =>
+    child.type === "paragraph" ? paragraphToLines(child) : [],
+  );
 }

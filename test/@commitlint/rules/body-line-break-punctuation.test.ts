@@ -1,6 +1,6 @@
 import { createCommitObject, type Commit } from "conventional-commits-parser";
 import { describe, expect, it } from "vitest";
-import { bodyLineBreakPunctuation } from "../../../src/@commitlint/rules/body-line-break-punctuation";
+import { bodyLineBreakPunctuation } from "#commitlint-rules/body-line-break-punctuation";
 
 function buildCommit(body: string | null): Commit {
   return createCommitObject({ header: "feat: x", body });
@@ -263,7 +263,9 @@ second part.`;
   it("単一違反のalwaysメッセージは指定の構造を持ちます。", () => {
     const [valid, msg] = bodyLineBreakPunctuation(buildCommit("句読点なしの一行"), "always");
     expect(valid).toBe(false);
-    expect(msg).toBe("body lines [句読点なしの一行] must end with punctuation and break after sentences");
+    expect(msg).toBe(
+      "body lines [句読点なしの一行] must end with punctuation and break after sentences",
+    );
   });
 
   it("複数違反のalwaysメッセージは違反行を` / `で結合します。", () => {
@@ -272,13 +274,17 @@ second part.`;
 句点で終わる。`;
     const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "always");
     expect(valid).toBe(false);
-    expect(msg).toBe("body lines [違反1の行 / 違反2の行] must end with punctuation and break after sentences");
+    expect(msg).toBe(
+      "body lines [違反1の行 / 違反2の行] must end with punctuation and break after sentences",
+    );
   });
 
   it("neverメッセージは`must not`を含む指定の構造を持ちます。", () => {
     const [valid, msg] = bodyLineBreakPunctuation(buildCommit("ends with period."), "never");
     expect(valid).toBe(false);
-    expect(msg).toBe("body lines [ends with period.] must not end with punctuation and break after sentences");
+    expect(msg).toBe(
+      "body lines [ends with period.] must not end with punctuation and break after sentences",
+    );
   });
 
   it("カスタム正規表現で句点のみ許可するとカンマ終わりはfailします。", () => {
@@ -310,7 +316,10 @@ next line`;
   });
 
   it("英文ピリオドが行の途中にあるとfailします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("First sentence. Second sentence."), "always");
+    const [valid] = bodyLineBreakPunctuation(
+      buildCommit("First sentence. Second sentence."),
+      "always",
+    );
     expect(valid).toBe(false);
   });
 
@@ -342,7 +351,10 @@ next line`;
   });
 
   it("読点が行の途中で前置文字が長いとfailします。", () => {
-    const [valid] = bodyLineBreakPunctuation(buildCommit("とても長い前置きを書いた後で、続きを書きます。"), "always");
+    const [valid] = bodyLineBreakPunctuation(
+      buildCommit("とても長い前置きを書いた後で、続きを書きます。"),
+      "always",
+    );
     expect(valid).toBe(false);
   });
 
@@ -372,7 +384,10 @@ next line`;
   });
 
   it("英文カンマの前置文字が閾値未満(5文字)ならpassします。", () => {
-    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("12345, rest of the line."), "always");
+    const [valid, msg] = bodyLineBreakPunctuation(
+      buildCommit("12345, rest of the line."),
+      "always",
+    );
     expect(msg).toBeUndefined();
     expect(valid).toBe(true);
   });
@@ -691,19 +706,28 @@ const x = 1
 
   describe("インラインコード内の句読点は許可される", () => {
     it("インラインコード内のドットは中間句読点として扱われません。", () => {
-      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`foo.bar = enable;`の時はhogeを実行する。"), "always");
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("`foo.bar = enable;`の時はhogeを実行する。"),
+        "always",
+      );
       expect(msg).toBeUndefined();
       expect(valid).toBe(true);
     });
 
     it("インラインコード内の英文ピリオドは中間句読点として扱われません。", () => {
-      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("Use `obj.method()` to call the method."), "always");
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("Use `obj.method()` to call the method."),
+        "always",
+      );
       expect(msg).toBeUndefined();
       expect(valid).toBe(true);
     });
 
     it("インラインコード内のカンマは中間句読点として扱われません。", () => {
-      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`fn(a, b, c, d, e, f, g)`を呼び出す。"), "always");
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("`fn(a, b, c, d, e, f, g)`を呼び出す。"),
+        "always",
+      );
       expect(msg).toBeUndefined();
       expect(valid).toBe(true);
     });
@@ -724,13 +748,19 @@ const x = 1
     });
 
     it("複数のインラインコードがあっても中身の句読点は許容されます。", () => {
-      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("`foo.bar`と`baz.qux`を比較する。"), "always");
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("`foo.bar`と`baz.qux`を比較する。"),
+        "always",
+      );
       expect(msg).toBeUndefined();
       expect(valid).toBe(true);
     });
 
     it("インラインコード外の中間句点はそのままfailします。", () => {
-      const [valid] = bodyLineBreakPunctuation(buildCommit("`foo.bar`を実行する。続けて。次の処理。"), "always");
+      const [valid] = bodyLineBreakPunctuation(
+        buildCommit("`foo.bar`を実行する。続けて。次の処理。"),
+        "always",
+      );
       expect(valid).toBe(false);
     });
 
@@ -751,7 +781,10 @@ const x = 1
     });
 
     it("文中にissue番号参照(#123)があってもpassします。", () => {
-      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("issue #123 を参照する。"), "always");
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("issue #123 を参照する。"),
+        "always",
+      );
       expect(msg).toBeUndefined();
       expect(valid).toBe(true);
     });
@@ -775,7 +808,10 @@ const x = 1
     });
 
     it("拡張Markdownのオートリンク記法(<URL>)はpassします。", () => {
-      const [valid, msg] = bodyLineBreakPunctuation(buildCommit("<https://example.com/foo.html>"), "always");
+      const [valid, msg] = bodyLineBreakPunctuation(
+        buildCommit("<https://example.com/foo.html>"),
+        "always",
+      );
       expect(msg).toBeUndefined();
       expect(valid).toBe(true);
     });

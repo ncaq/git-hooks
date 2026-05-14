@@ -1,7 +1,7 @@
 import type { Commit, CommitBase, CommitReference } from "conventional-commits-parser";
 import { createCommitObject } from "conventional-commits-parser";
 import { describe, expect, it } from "vitest";
-import { referencesActionEnum } from "../../../src/@commitlint/rules/references-action-enum";
+import { referencesActionEnum } from "#commitlint-rules/references-action-enum";
 
 function buildReference(overrides: Partial<CommitReference> = {}): CommitReference {
   return {
@@ -16,8 +16,10 @@ function buildReference(overrides: Partial<CommitReference> = {}): CommitReferen
 }
 
 /**
- * `Commit`は`CommitBase & CommitMeta`の交差型でindex signatureを持つため、リテラルを`Partial<Commit>`に直接渡すと型エラーになる。
- * `Object.assign`で`createCommitObject()`の戻り値に`Partial<CommitBase>`をマージすればキャスト無しで`Commit`値を構築できる。
+ * `Commit`は`CommitBase & CommitMeta`の交差型でindex signatureを持つため、
+ * リテラルを`Partial<Commit>`に直接渡すと型エラーになる。
+ * `Object.assign`で`createCommitObject()`の戻り値に`Partial<CommitBase>`をマージすれば、
+ * キャスト無しで`Commit`値を構築できる。
  */
 function buildCommit(references: CommitReference[]): Commit {
   const overrides: Partial<CommitBase> = { header: "feat: x", references };
@@ -31,47 +33,66 @@ describe("referencesActionEnum", () => {
   });
 
   it("actionがcloseならpassします。", () => {
-    const [valid] = referencesActionEnum(buildCommit([buildReference({ action: "close" })]), "always", [
-      "close",
-      "ref",
-    ]);
+    const [valid] = referencesActionEnum(
+      buildCommit([buildReference({ action: "close" })]),
+      "always",
+      ["close", "ref"],
+    );
     expect(valid).toBe(true);
   });
 
   it("actionがrefならpassします。", () => {
-    const [valid] = referencesActionEnum(buildCommit([buildReference({ action: "ref" })]), "always", ["close", "ref"]);
+    const [valid] = referencesActionEnum(
+      buildCommit([buildReference({ action: "ref" })]),
+      "always",
+      ["close", "ref"],
+    );
     expect(valid).toBe(true);
   });
 
   it("大文字始まりのCloseはケース区別ありで拒否されます。", () => {
-    const [valid, message] = referencesActionEnum(buildCommit([buildReference({ action: "Close" })]), "always", [
-      "close",
-      "ref",
-    ]);
+    const [valid, message] = referencesActionEnum(
+      buildCommit([buildReference({ action: "Close" })]),
+      "always",
+      ["close", "ref"],
+    );
     expect(valid).toBe(false);
     expect(message).toBe("references action [Close] must be one of [close, ref]");
   });
 
   it("複数形のClosesは拒否されます。", () => {
-    const [valid] = referencesActionEnum(buildCommit([buildReference({ action: "Closes" })]), "always", [
-      "close",
-      "ref",
-    ]);
+    const [valid] = referencesActionEnum(
+      buildCommit([buildReference({ action: "Closes" })]),
+      "always",
+      ["close", "ref"],
+    );
     expect(valid).toBe(false);
   });
 
   it("許可リストに含まれず拒否されます。", () => {
-    const [valid] = referencesActionEnum(buildCommit([buildReference({ action: "fix" })]), "always", ["close", "ref"]);
+    const [valid] = referencesActionEnum(
+      buildCommit([buildReference({ action: "fix" })]),
+      "always",
+      ["close", "ref"],
+    );
     expect(valid).toBe(false);
   });
 
   it("refsは複数形なので拒否されます。", () => {
-    const [valid] = referencesActionEnum(buildCommit([buildReference({ action: "refs" })]), "always", ["close", "ref"]);
+    const [valid] = referencesActionEnum(
+      buildCommit([buildReference({ action: "refs" })]),
+      "always",
+      ["close", "ref"],
+    );
     expect(valid).toBe(false);
   });
 
   it("actionがnullの裸の参照はスキップされてpassします。", () => {
-    const [valid] = referencesActionEnum(buildCommit([buildReference({ action: null })]), "always", ["close", "ref"]);
+    const [valid] = referencesActionEnum(
+      buildCommit([buildReference({ action: null })]),
+      "always",
+      ["close", "ref"],
+    );
     expect(valid).toBe(true);
   });
 
@@ -90,24 +111,30 @@ describe("referencesActionEnum", () => {
   });
 
   it("when=neverでは許可リストに含まれるactionが違反になります。", () => {
-    const [valid, message] = referencesActionEnum(buildCommit([buildReference({ action: "close" })]), "never", [
-      "close",
-      "ref",
-    ]);
+    const [valid, message] = referencesActionEnum(
+      buildCommit([buildReference({ action: "close" })]),
+      "never",
+      ["close", "ref"],
+    );
     expect(valid).toBe(false);
     expect(message).toBe("references action [close] must not be one of [close, ref]");
   });
 
   it("when=neverで許可リスト外のactionだけならpassします。", () => {
-    const [valid] = referencesActionEnum(buildCommit([buildReference({ action: "Closes" })]), "never", [
-      "close",
-      "ref",
-    ]);
+    const [valid] = referencesActionEnum(
+      buildCommit([buildReference({ action: "Closes" })]),
+      "never",
+      ["close", "ref"],
+    );
     expect(valid).toBe(true);
   });
 
   it("valueを差し替えると別のactionも許可できます。", () => {
-    const [valid] = referencesActionEnum(buildCommit([buildReference({ action: "fix" })]), "always", ["fix"]);
+    const [valid] = referencesActionEnum(
+      buildCommit([buildReference({ action: "fix" })]),
+      "always",
+      ["fix"],
+    );
     expect(valid).toBe(true);
   });
 
