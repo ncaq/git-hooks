@@ -18,12 +18,9 @@ const chmodEntryPlugin: Plugin = {
       throw new Error("chmod-entry plugin requires outputOptions.dir to be a string");
     }
     await Promise.all(
-      Object.values(bundle).map(async (chunk) => {
-        if (chunk.type !== "chunk" || !chunk.isEntry) {
-          return;
-        }
-        await chmod(path.join(outDir, chunk.fileName), 0o755);
-      }),
+      Object.values(bundle)
+        .filter((chunk) => chunk.type === "chunk" && chunk.isEntry)
+        .map((chunk) => chmod(path.join(outDir, chunk.fileName), 0o755)),
     );
   },
 };
