@@ -1,5 +1,5 @@
 import { Command, CommandExecutor, Error as PlatformError } from "@effect/platform";
-import { Data, Effect } from "effect";
+import { Data, Effect, Either, Option } from "effect";
 
 /**
  * `git`サブコマンドの起動・実行自体が`PlatformError`で失敗した場合のエラー。
@@ -77,18 +77,18 @@ const gitInherit = (
  * ref: refs/heads/master\tHEAD
  * <sha>\tHEAD
  * ```
+ *
+ * 各段階で発生し得る`null`/`undefined`は`Option.flatMapNullable`が`None`に畳み込み、
+ * 最後に`Either.fromOption`で`None`を`LsRemoteParseFailure`へ写すことで失敗チャネルへ載せる。
  */
-function parseDefaultBranchFromLsRemote(
+const parseDefaultBranchFromLsRemote = (
   output: string,
-): Effect.Effect<never, LsRemoteParseFailure> | Effect.Effect<string, never> {
-  const refLine = output.split("\n").find((line) => line.startsWith("ref:"));
-  const captured = refLine == null ? undefined : /^ref:\s+refs\/heads\/(\S+)/.exec(refLine);
-  const branch = captured?.[1];
-  if (branch == null) {
-    return Effect.fail(new LsRemoteParseFailure({ output }));
-  }
-  return Effect.succeed(branch);
-}
+): Effect.Effect<string, LsRemoteParseFailure> =>
+  Option.fromNullable(output.split("\n").find((line) => line.startsWith("ref:"))).pipe(
+    Option.flatMapNullable((refLine) => /^ref:\s+refs\/heads\/(\S+)/.exec(refLine)),
+    Option.flatMapNullable((match) => match[1]),
+    Either.fromOption(() => new LsRemoteParseFailure({ output })),
+  );
 
 /**
  * `refs/remotes/origin/HEAD`がローカルに設定されているかを終了コードで判定する。
