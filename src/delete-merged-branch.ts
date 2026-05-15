@@ -167,7 +167,7 @@ export const deleteMergedBranch: Effect.Effect<
   const merged = yield* mergedBranches;
   const targets = merged.filter((branch) => branch !== defaultBranch);
   if (0 < targets.length) {
-    yield* gitInherit("branch", "--delete", ...targets);
+    yield* gitInherit("branch", "--delete", "--", ...targets);
   }
   yield* gitInherit("fetch", "--prune");
 });
