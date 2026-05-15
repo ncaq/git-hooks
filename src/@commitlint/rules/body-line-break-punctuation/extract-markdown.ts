@@ -1,3 +1,4 @@
+import { Match } from "effect";
 import type { Paragraph, PhrasingContent, Root } from "mdast";
 import { fromMarkdown, type Options as FromMarkdownOptions } from "mdast-util-from-markdown";
 import { gfmFromMarkdown } from "mdast-util-gfm";
@@ -31,24 +32,18 @@ function maskAsInlineCode(value: string): string {
  * 拡張Markdownのオートリンク記法(`<URL>`)やGFM autolink-literalで認識される素のURLも、
  * mdast上は`link`ノードとなるため同じ扱いになります。
  */
-function phrasingToText(node: PhrasingContent): string {
-  switch (node.type) {
-    case "text":
-      return node.value;
-    case "inlineCode":
-      return maskAsInlineCode(node.value);
-    case "break":
-      return "\n";
-    case "link":
-    case "linkReference":
-      return maskAsInlineCode(node.children.map(phrasingToText).join(""));
-    case "image":
-    case "imageReference":
-      return maskAsInlineCode(node.alt ?? "");
-    default:
-      return "children" in node ? node.children.map(phrasingToText).join("") : "";
-  }
-}
+const matchType = Match.discriminator("type");
+
+const phrasingToText: (node: PhrasingContent) => string = Match.type<PhrasingContent>().pipe(
+  matchType("text", (node) => node.value),
+  matchType("inlineCode", (node) => maskAsInlineCode(node.value)),
+  matchType("break", () => "\n"),
+  matchType("link", "linkReference", (node) =>
+    maskAsInlineCode(node.children.map(phrasingToText).join("")),
+  ),
+  matchType("image", "imageReference", (node) => maskAsInlineCode(node.alt ?? "")),
+  Match.orElse((node) => ("children" in node ? node.children.map(phrasingToText).join("") : "")),
+);
 
 /**
  * `paragraph`をsoftbreak/hardbreakで分割した行の配列に変換する。
