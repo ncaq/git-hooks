@@ -3,7 +3,7 @@ import { Args, Command as CliCommand } from "@effect/cli";
 import type { CommandExecutor } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Console, Effect } from "effect";
-import { deleteMergedBranch, type DeleteMergedBranchFailure } from "../delete-merged-branch";
+import { deleteMergedBranch, type DeleteMergedBranchError } from "../delete-merged-branch";
 
 /**
  * Gitから渡される位置引数を吸収する定義。
@@ -13,11 +13,8 @@ import { deleteMergedBranch, type DeleteMergedBranchFailure } from "../delete-me
 const forwardedArgs = Args.text({ name: "forwarded-args" }).pipe(Args.repeated);
 
 /** `@effect/cli`の引数パース後に呼ばれるハンドラ本体。 */
-const handle = (): Effect.Effect<
-  void,
-  DeleteMergedBranchFailure,
-  CommandExecutor.CommandExecutor
-> => deleteMergedBranch.pipe(Effect.tapError((err) => Console.error(err.message)));
+const handle = (): Effect.Effect<void, DeleteMergedBranchError, CommandExecutor.CommandExecutor> =>
+  deleteMergedBranch.pipe(Effect.tapError((err) => Console.error(err.message)));
 
 /** post-mergeフック本体のCLI定義。 */
 const command = CliCommand.make("post-merge", { args: forwardedArgs }, handle);

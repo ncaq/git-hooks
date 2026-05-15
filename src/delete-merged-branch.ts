@@ -1,45 +1,72 @@
-import { Command, CommandExecutor } from "@effect/platform";
+import { Command, CommandExecutor, Error as PlatformError } from "@effect/platform";
 import { Data, Effect } from "effect";
 
-/** マージ済みブランチ削除処理で発生し得るエラー。 */
-export class DeleteMergedBranchFailure extends Data.TaggedError("DeleteMergedBranchFailure")<{
-  readonly message: string;
-  readonly cause?: unknown;
-}> {}
+/**
+ * `git`サブコマンドの起動・実行自体が`PlatformError`で失敗した場合のエラー。
+ * `cause`に元の`PlatformError`を保持し、`args`に実行しようとした引数列を構造化して持つ。
+ */
+export class GitCommandFailure extends Data.TaggedError("GitCommandFailure")<{
+  readonly args: readonly string[];
+  readonly cause: PlatformError.PlatformError;
+}> {
+  override get message(): string {
+    return `git ${this.args.join(" ")}: ${this.cause.message}`;
+  }
+}
+
+/**
+ * `git`サブコマンドが起動はしたが非0で終了した場合のエラー。
+ * `args`と`exitCode`を構造化して保持し、表示は`message`で動的に組み立てる。
+ */
+export class GitNonZeroExit extends Data.TaggedError("GitNonZeroExit")<{
+  readonly args: readonly string[];
+  readonly exitCode: number;
+}> {
+  override get message(): string {
+    return `git ${this.args.join(" ")} exited with code ${this.exitCode}`;
+  }
+}
+
+/**
+ * `git ls-remote --symref origin HEAD`の出力からデフォルトブランチを抽出できなかった場合のエラー。
+ */
+export class LsRemoteParseFailure extends Data.TaggedError("LsRemoteParseFailure")<{
+  readonly output: string;
+}> {
+  override get message(): string {
+    return `failed to parse default branch from ls-remote output: ${this.output}`;
+  }
+}
+
+/** このモジュールが返し得るエラーの全集合。 */
+export type DeleteMergedBranchError = GitCommandFailure | GitNonZeroExit | LsRemoteParseFailure;
 
 /** `git`サブコマンド呼び出しを生成する小さなヘルパ。 */
 function git(...args: readonly string[]): Command.Command {
   return Command.make("git", ...args);
 }
 
-/** プラットフォームエラーを構造化したエラーに包み直すユーティリティ。 */
-function wrapFailure(operation: string): (cause: unknown) => DeleteMergedBranchFailure {
-  return (cause: unknown): DeleteMergedBranchFailure =>
-    new DeleteMergedBranchFailure({
-      message: `${operation}: ${cause instanceof Error ? cause.message : String(cause)}`,
-      cause,
-    });
-}
+/** `PlatformError`を`GitCommandFailure`に包み直す`Effect.mapError`用ヘルパ。 */
+const toGitCommandFailure =
+  (args: readonly string[]) =>
+  (cause: PlatformError.PlatformError): GitCommandFailure =>
+    new GitCommandFailure({ args, cause });
 
 /** stdoutを文字列として取得する`git`呼び出し。 */
 const gitText = (
   ...args: readonly string[]
-): Effect.Effect<string, DeleteMergedBranchFailure, CommandExecutor.CommandExecutor> =>
-  Command.string(git(...args)).pipe(Effect.mapError(wrapFailure(`git ${args.join(" ")}`)));
+): Effect.Effect<string, GitCommandFailure, CommandExecutor.CommandExecutor> =>
+  Command.string(git(...args)).pipe(Effect.mapError(toGitCommandFailure(args)));
 
-/** stdout/stderrを継承する`git`呼び出し。終了コードが非0なら失敗にする。 */
+/** stdout/stderrを継承する`git`呼び出し。終了コードが非0なら`GitNonZeroExit`で失敗にする。 */
 const gitInherit = (
   ...args: readonly string[]
-): Effect.Effect<void, DeleteMergedBranchFailure, CommandExecutor.CommandExecutor> =>
+): Effect.Effect<void, GitCommandFailure | GitNonZeroExit, CommandExecutor.CommandExecutor> =>
   Effect.gen(function* () {
     const cmd = git(...args).pipe(Command.stdout("inherit"), Command.stderr("inherit"));
-    const code = yield* Command.exitCode(cmd).pipe(
-      Effect.mapError(wrapFailure(`git ${args.join(" ")}`)),
-    );
+    const code = yield* Command.exitCode(cmd).pipe(Effect.mapError(toGitCommandFailure(args)));
     if (code !== 0) {
-      return yield* new DeleteMergedBranchFailure({
-        message: `git ${args.join(" ")} exited with code ${code}`,
-      });
+      return yield* new GitNonZeroExit({ args, exitCode: code });
     }
   });
 
@@ -53,15 +80,13 @@ const gitInherit = (
  */
 const parseDefaultBranchFromLsRemote = (
   output: string,
-): Effect.Effect<string, DeleteMergedBranchFailure> =>
+): Effect.Effect<string, LsRemoteParseFailure> =>
   Effect.gen(function* () {
     const refLine = output.split("\n").find((line) => line.startsWith("ref:"));
     const captured = refLine == null ? undefined : /^ref:\s+refs\/heads\/(\S+)/.exec(refLine);
     const branch = captured?.[1];
     if (branch == null) {
-      return yield* new DeleteMergedBranchFailure({
-        message: `failed to parse default branch from ls-remote output: ${output}`,
-      });
+      return yield* new LsRemoteParseFailure({ output });
     }
     return branch;
   });
@@ -73,14 +98,15 @@ const parseDefaultBranchFromLsRemote = (
  */
 const localOriginHeadExists: Effect.Effect<
   boolean,
-  DeleteMergedBranchFailure,
+  GitCommandFailure,
   CommandExecutor.CommandExecutor
-> = Command.exitCode(
-  git("symbolic-ref", "--quiet", "refs/remotes/origin/HEAD").pipe(Command.stderr("pipe")),
-).pipe(
-  Effect.mapError(wrapFailure("git symbolic-ref --quiet refs/remotes/origin/HEAD")),
-  Effect.map((code) => code === 0),
-);
+> = Effect.suspend(() => {
+  const args = ["symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"] as const;
+  return Command.exitCode(git(...args).pipe(Command.stderr("pipe"))).pipe(
+    Effect.mapError(toGitCommandFailure(args)),
+    Effect.map((code) => code === 0),
+  );
+});
 
 /**
  * リモート`origin`のデフォルトブランチを検出する。
@@ -89,7 +115,7 @@ const localOriginHeadExists: Effect.Effect<
  */
 const detectDefaultBranch: Effect.Effect<
   string,
-  DeleteMergedBranchFailure,
+  GitCommandFailure | LsRemoteParseFailure,
   CommandExecutor.CommandExecutor
 > = Effect.gen(function* () {
   const exists = yield* localOriginHeadExists;
@@ -102,11 +128,8 @@ const detectDefaultBranch: Effect.Effect<
 });
 
 /** 現在のブランチ名を取得する。detached HEADでは`HEAD`が返る。 */
-const currentBranch: Effect.Effect<
-  string,
-  DeleteMergedBranchFailure,
-  CommandExecutor.CommandExecutor
-> = gitText("rev-parse", "--abbrev-ref", "HEAD").pipe(Effect.map((out) => out.trim()));
+const currentBranch: Effect.Effect<string, GitCommandFailure, CommandExecutor.CommandExecutor> =
+  gitText("rev-parse", "--abbrev-ref", "HEAD").pipe(Effect.map((out) => out.trim()));
 
 /**
  * HEADにマージ済みのローカルブランチ名を取得する。
@@ -115,7 +138,7 @@ const currentBranch: Effect.Effect<
  */
 const mergedBranches: Effect.Effect<
   readonly string[],
-  DeleteMergedBranchFailure,
+  GitCommandFailure,
   CommandExecutor.CommandExecutor
 > = gitText("for-each-ref", "--merged=HEAD", "--format=%(refname:short)", "refs/heads/").pipe(
   Effect.map((out) =>
@@ -133,7 +156,7 @@ const mergedBranches: Effect.Effect<
  */
 export const deleteMergedBranch: Effect.Effect<
   void,
-  DeleteMergedBranchFailure,
+  DeleteMergedBranchError,
   CommandExecutor.CommandExecutor
 > = Effect.gen(function* () {
   const defaultBranch = yield* detectDefaultBranch;

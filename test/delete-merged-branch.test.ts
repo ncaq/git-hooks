@@ -6,7 +6,11 @@ import { chdir, cwd } from "node:process";
 import { NodeContext } from "@effect/platform-node";
 import { Effect, Exit } from "effect";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { deleteMergedBranch } from "../src/delete-merged-branch";
+import {
+  deleteMergedBranch,
+  GitNonZeroExit,
+  LsRemoteParseFailure,
+} from "../src/delete-merged-branch";
 
 /**
  * テスト用の`git`コマンド実行ヘルパ。
@@ -139,5 +143,27 @@ describe("deleteMergedBranch", () => {
     await run();
 
     expect(localBranches(work)).toEqual(["master"]);
+  });
+});
+
+describe("delete-merged-branchのエラー型", () => {
+  it("GitNonZeroExitの`message`は引数列と終了コードを含む。", () => {
+    const err = new GitNonZeroExit({
+      args: ["branch", "--delete", "feat-merged"],
+      exitCode: 1,
+    });
+    expect(err.message).toBe("git branch --delete feat-merged exited with code 1");
+    expect(err._tag).toBe("GitNonZeroExit");
+    expect(err.args).toEqual(["branch", "--delete", "feat-merged"]);
+    expect(err.exitCode).toBe(1);
+  });
+
+  it("LsRemoteParseFailureの`message`は元の出力を含む。", () => {
+    const err = new LsRemoteParseFailure({ output: "garbage output" });
+    expect(err.message).toBe(
+      "failed to parse default branch from ls-remote output: garbage output",
+    );
+    expect(err._tag).toBe("LsRemoteParseFailure");
+    expect(err.output).toBe("garbage output");
   });
 });
