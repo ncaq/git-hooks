@@ -78,18 +78,17 @@ const gitInherit = (
  * <sha>\tHEAD
  * ```
  */
-const parseDefaultBranchFromLsRemote = (
+function parseDefaultBranchFromLsRemote(
   output: string,
-): Effect.Effect<string, LsRemoteParseFailure> =>
-  Effect.gen(function* () {
-    const refLine = output.split("\n").find((line) => line.startsWith("ref:"));
-    const captured = refLine == null ? undefined : /^ref:\s+refs\/heads\/(\S+)/.exec(refLine);
-    const branch = captured?.[1];
-    if (branch == null) {
-      return yield* new LsRemoteParseFailure({ output });
-    }
-    return branch;
-  });
+): Effect.Effect<never, LsRemoteParseFailure> | Effect.Effect<string, never> {
+  const refLine = output.split("\n").find((line) => line.startsWith("ref:"));
+  const captured = refLine == null ? undefined : /^ref:\s+refs\/heads\/(\S+)/.exec(refLine);
+  const branch = captured?.[1];
+  if (branch == null) {
+    return Effect.fail(new LsRemoteParseFailure({ output }));
+  }
+  return Effect.succeed(branch);
+}
 
 /**
  * `refs/remotes/origin/HEAD`がローカルに設定されているかを終了コードで判定する。
