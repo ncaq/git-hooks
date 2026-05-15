@@ -82,7 +82,10 @@
             name: script:
             pkgs.runCommand name
               {
-                nativeBuildInputs = [ nodejs ];
+                nativeBuildInputs = with pkgs; [
+                  git # testで必要。
+                  nodejs # 全体の実行に必要。
+                ];
               }
               ''
                 cp -r ${tsRoot}/. .
@@ -108,24 +111,18 @@
               mkdir -p $out/lib/git-hooks
 
               cp -r dist $out/lib/git-hooks/dist
-              cp -r ${./script} $out/lib/git-hooks/script
 
               runHook postInstall
             '';
 
             postFixup = ''
               for exec in $out/lib/git-hooks/dist/hooks/commit-msg \
-                          $out/lib/git-hooks/dist/hooks/post-merge \
-                          $out/lib/git-hooks/script/delete-merged-branch; do
+                          $out/lib/git-hooks/dist/hooks/post-merge; do
                 wrapProgram "$exec" --prefix PATH : ${
                   lib.makeBinPath (
                     with pkgs;
                     [
-                      coreutils
-                      findutils
-                      gawk
                       git
-                      gnugrep
                       nodejs
                     ]
                   )
