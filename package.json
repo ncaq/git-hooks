@@ -20,11 +20,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@commitlint/config-conventional": "^20.5.3",
-    "@commitlint/format": "^20.5.0",
-    "@commitlint/lint": "^20.5.3",
-    "@commitlint/message": "^20.4.3",
-    "@commitlint/types": "^20.5.0",
+    "@commitlint/config-conventional": "^21.0.0",
+    "@commitlint/format": "^21.0.0",
+    "@commitlint/lint": "^21.0.0",
+    "@commitlint/message": "^21.0.0",
+    "@commitlint/types": "^21.0.0",
     "@effect/cli": "^0.75.1",
     "@effect/platform": "^0.96.1",
     "@effect/platform-node": "^0.106.0",
