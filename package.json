@@ -37,12 +37,11 @@
   },
   "devDependencies": {
     "@effect/language-service": "^0.86.1",
-    "@eslint/compat": "^2.0.5",
     "@eslint/js": "^10.0.1",
     "@types/mdast": "^4.0.4",
     "@types/node": "^22.19.17",
     "conventional-commits-parser": "^6.4.0",
-    "eslint": "^10.3.0",
+    "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import-x": "^4.16.2",
