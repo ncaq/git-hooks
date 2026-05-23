@@ -279,12 +279,8 @@ second part.`;
     );
   });
 
-  it("neverメッセージは`must not`を含む指定の構造を持ちます。", () => {
-    const [valid, msg] = bodyLineBreakPunctuation(buildCommit("ends with period."), "never");
-    expect(valid).toBe(false);
-    expect(msg).toBe(
-      "body lines [ends with period.] must not end with punctuation and break after sentences",
-    );
+  it("when=always以外は未サポートで例外を投げます。", () => {
+    expect(() => bodyLineBreakPunctuation(buildCommit("ends with period."), "never")).toThrow();
   });
 
   it("カスタム正規表現で句点のみ許可するとカンマ終わりはfailします。", () => {
@@ -293,21 +289,6 @@ second part.`;
 next line.`;
     const [valid] = bodyLineBreakPunctuation(buildCommit(body), "always", onlyPeriod);
     expect(valid).toBe(false);
-  });
-
-  it("when=neverでは句読点で終わる行が違反になります。", () => {
-    const body = `ends with period.
-next line.`;
-    const [valid] = bodyLineBreakPunctuation(buildCommit(body), "never");
-    expect(valid).toBe(false);
-  });
-
-  it("when=neverで句読点なしの行はpassします。", () => {
-    const body = `no punctuation
-next line`;
-    const [valid, msg] = bodyLineBreakPunctuation(buildCommit(body), "never");
-    expect(msg).toBeUndefined();
-    expect(valid).toBe(true);
   });
 
   it("句点が行の途中にあるとfailします。", () => {

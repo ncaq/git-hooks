@@ -11,21 +11,13 @@ import { hasNoMidLinePunctuation } from "./mid-line-punctuation";
 const defaultTerminator = /(?:[\p{P}`])$/u;
 
 /** 個別の行が違反であるかを判定する。 */
-function isLineViolation(line: string, negated: boolean, anchoredTerminator: RegExp): boolean {
-  const endsWithTerminator = anchoredTerminator.test(line);
-  if (negated) {
-    return endsWithTerminator;
-  }
-  return !endsWithTerminator || !hasNoMidLinePunctuation(line);
+function isLineViolation(line: string, anchoredTerminator: RegExp): boolean {
+  return !anchoredTerminator.test(line) || !hasNoMidLinePunctuation(line);
 }
 
 /** 文字列から違反行を取り出す。 */
-function selectViolations(
-  body: string,
-  negated: boolean,
-  anchoredTerminator: RegExp,
-): readonly string[] {
-  return extractLines(body).filter((line) => isLineViolation(line, negated, anchoredTerminator));
+function selectViolations(body: string, anchoredTerminator: RegExp): readonly string[] {
+  return extractLines(body).filter((line) => isLineViolation(line, anchoredTerminator));
 }
 
 /**
@@ -44,35 +36,33 @@ function selectViolations(
  * リスト項目直後の行は遅延継続でリスト項目内に取り込まれるため対象外となる。
  * 段落内の`inlineCode`(バッククオート囲み)の中身も中間句読点判定の対象外となる。
  *
- * `when="never"`: 行末が`anchoredTerminator`で終わる行を違反とする。
- * neverモードの実用性が全く分からないので、
- * 一応慣習に従って実装はしますが、
- * 真面目に検査していません。
+ * `when`は`always`のみをサポートし、それ以外が指定された場合は例外を投げる。
  */
 export const bodyLineBreakPunctuation: SyncRule<RegExp> = (
   parsed,
   when = "always",
   anchoredTerminator = defaultTerminator,
 ) => {
+  if (when !== "always") {
+    throw new Error(`body-line-break-punctuation only supports when=always, but got when=${when}`);
+  }
+
   const body = parsed.body;
   if (body == null || body === "") {
     return [true];
   }
 
-  const negated = when === "never";
-
-  const violations = selectViolations(body, negated, anchoredTerminator);
+  const violations = selectViolations(body, anchoredTerminator);
 
   if (violations.length === 0) {
     return [true];
   }
 
-  const verb = negated ? "must not" : "must";
   return [
     false,
     message([
       `body lines [${violations.join(" / ")}]`,
-      verb,
+      "must",
       "end with punctuation and break after sentences",
     ]),
   ];
