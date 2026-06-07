@@ -51,6 +51,14 @@ Third line.`;
     expect(valid).toBe(false);
   });
 
+  it("全角句点が行末ならば違反ではありません。", () => {
+    const body = `1行目です．
+2行目です．`;
+    const [valid, msg] = periodNeedsBreak(buildCommit(body), "always");
+    expect(msg).toBeUndefined();
+    expect(valid).toBe(true);
+  });
+
   it("複数の句点が中間にある単一行はfailします。", () => {
     const [valid] = periodNeedsBreak(buildCommit("1文目。2文目。3文目。"), "always");
     expect(valid).toBe(false);
