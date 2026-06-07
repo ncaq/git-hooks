@@ -10,7 +10,7 @@ import { hasNoMidLineComma } from "./body-punctuation/mid-line-comma";
  *
  * `when="always"`: 各行は行の途中に読点(`,`/`，`/`、`)を含まないことが要求される。
  * ただし前置文字数が閾値未満の読点(`また、`等の短い接続詞)は許容する。
- * 句点は別ルールの担当であり、ここでは無害文字として扱う。
+ * 句点は別ルール`body-period-needs-break`の担当であり、ここでは無害文字として扱う。
  *
  * 検査対象はmdast上の段落(`paragraph`ノード)に限られる。
  * 空行・リスト項目・コードフェンス内・引用ブロック・見出し(ATX/setext)・水平線・テーブルは、

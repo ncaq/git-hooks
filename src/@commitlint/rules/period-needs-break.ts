@@ -10,7 +10,7 @@ import { hasNoMidLinePeriod } from "./body-punctuation/mid-line-period";
  *
  * `when="always"`: 各行は行の途中に句点(`.`/`。`/`．`)を含まないことが要求される。
  * 行末の句点は許容され、中間に句点が現れた時点で違反となる。
- * 読点は別ルールの担当であり、ここでは無害文字として扱う。
+ * 読点は別ルール`body-comma-needs-break`の担当であり、ここでは無害文字として扱う。
  *
  * 検査対象はmdast上の段落(`paragraph`ノード)に限られる。
  * 空行・リスト項目・コードフェンス内・引用ブロック・見出し(ATX/setext)・水平線・テーブルは、
