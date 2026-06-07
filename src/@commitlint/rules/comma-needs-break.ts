@@ -1,7 +1,7 @@
 import message from "@commitlint/message";
 import type { SyncRule } from "@commitlint/types";
 import { extractLines } from "./body-punctuation/extract-markdown";
-import { hasNoMidLineComma } from "./body-punctuation/mid-line-comma";
+import { hasMidLineComma } from "./body-punctuation/mid-line-comma";
 
 /**
  * ルール本体。
@@ -29,7 +29,7 @@ export const commaNeedsBreak: SyncRule = (parsed, when = "always") => {
     return [true];
   }
 
-  const violations = extractLines(body).filter((line) => !hasNoMidLineComma(line));
+  const violations = extractLines(body).filter((line) => hasMidLineComma(line));
 
   if (violations.length === 0) {
     return [true];

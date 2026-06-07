@@ -58,7 +58,7 @@ const noMidLineComma: P.Parser<C.Char, void> = pipe(
   ),
 );
 
-/** 行に中間読点が無いかを判定する。 */
-export function hasNoMidLineComma(line: string): boolean {
-  return isRight(noMidLineComma(stream(Array.from(line))));
+/** 行の途中に読点が含まれるかを判定する。 */
+export function hasMidLineComma(line: string): boolean {
+  return !isRight(noMidLineComma(stream(Array.from(line))));
 }

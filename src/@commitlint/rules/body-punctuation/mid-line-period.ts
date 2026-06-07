@@ -37,7 +37,7 @@ const noMidLinePeriod: P.Parser<C.Char, void> = pipe(
   ),
 );
 
-/** 行に中間句点が無いかを判定する。 */
-export function hasNoMidLinePeriod(line: string): boolean {
-  return isRight(noMidLinePeriod(stream(Array.from(line))));
+/** 行の途中に句点が含まれるかを判定する。 */
+export function hasMidLinePeriod(line: string): boolean {
+  return !isRight(noMidLinePeriod(stream(Array.from(line))));
 }

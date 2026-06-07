@@ -1,7 +1,7 @@
 import message from "@commitlint/message";
 import type { SyncRule } from "@commitlint/types";
 import { extractLines } from "./body-punctuation/extract-markdown";
-import { hasNoMidLinePeriod } from "./body-punctuation/mid-line-period";
+import { hasMidLinePeriod } from "./body-punctuation/mid-line-period";
 
 /**
  * ルール本体。
@@ -29,7 +29,7 @@ export const periodNeedsBreak: SyncRule = (parsed, when = "always") => {
     return [true];
   }
 
-  const violations = extractLines(body).filter((line) => !hasNoMidLinePeriod(line));
+  const violations = extractLines(body).filter((line) => hasMidLinePeriod(line));
 
   if (violations.length === 0) {
     return [true];
