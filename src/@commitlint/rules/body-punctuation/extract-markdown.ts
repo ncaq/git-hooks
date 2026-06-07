@@ -61,9 +61,34 @@ function paragraphToLines(paragraph: Paragraph): readonly string[] {
  * `paragraph`にならず自然に除外される。
  * リスト項目や引用ブロック内部にネストする段落も、ルート直下ではないので対象外。
  */
-export function extractLines(body: string): readonly string[] {
+function parseLines(body: string): readonly string[] {
   const tree: Root = fromMarkdown(body, fromMarkdownOptions);
   return tree.children.flatMap((child) =>
     child.type === "paragraph" ? paragraphToLines(child) : [],
   );
+}
+
+/**
+ * 直前に処理した`body`と結果のペアを保持する1エントリキャッシュ。
+ * 分割された各ルール、
+ * - `body-comma-needs-break`
+ * - `body-period-needs-break`
+ * - `body-break-needs-punctuation`
+ * などが同一の`body`に対して`extractLines`を呼ぶため、
+ * Markdownのフルパースが1コミットメッセージあたり複数回繰り返されるのを防ぐ。
+ * `body`と`lines`を1つのオブジェクトに束ねて持つことで両者の整合を保つ。
+ */
+let cache: { readonly body: string; readonly lines: readonly string[] } | undefined;
+
+/**
+ * `parseLines`の結果は`body`のみで決まる純粋な値なので、
+ * 直前の呼び出しと同じ`body`であればパースを省略して前回の結果を返す。
+ */
+export function extractLines(body: string): readonly string[] {
+  if (cache?.body === body) {
+    return cache.lines;
+  }
+  const lines = parseLines(body);
+  cache = { body, lines };
+  return lines;
 }
