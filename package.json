@@ -4,8 +4,7 @@
   "imports": {
     "#commitlint/*": "./src/@commitlint/*.ts",
     "#commitlint-rules": "./src/@commitlint/rules/index.ts",
-    "#commitlint-rules/*": "./src/@commitlint/rules/*.ts",
-    "#commitlint-rules/body-line-break-punctuation": "./src/@commitlint/rules/body-line-break-punctuation/index.ts"
+    "#commitlint-rules/*": "./src/@commitlint/rules/*.ts"
   },
   "scripts": {
     "build": "vite build",

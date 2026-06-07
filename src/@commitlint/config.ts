@@ -40,7 +40,9 @@ const overrideRules = {
 
   "subject-case": [RuleConfigSeverity.Disabled],
 
-  "body-line-break-punctuation": [RuleConfigSeverity.Error, "always"],
+  "body-comma-needs-break": [RuleConfigSeverity.Error, "always"],
+  "body-period-needs-break": [RuleConfigSeverity.Error, "always"],
+  "body-break-needs-punctuation": [RuleConfigSeverity.Error, "always"],
 
   "references-action-enum": [RuleConfigSeverity.Error, "always", allowedActions],
 } as const satisfies UserConfig["rules"] & UserRulesConfig;
