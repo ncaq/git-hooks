@@ -1,6 +1,13 @@
 import message from "@commitlint/message";
 import type { SyncRule } from "@commitlint/types";
-import { defaultTerminator, extractLines } from "./body-punctuation/shared";
+import { extractLines } from "./body-punctuation/extract-markdown";
+
+/**
+ * 行末として許容する終端正規表現。
+ * UnicodeのPunctuationプロパティをベースとし、
+ * 加えてインラインコード記法のためにバッククオートを許可する。
+ */
+const defaultTerminator = /(?:[\p{P}`])$/u;
 
 /**
  * ルール本体。

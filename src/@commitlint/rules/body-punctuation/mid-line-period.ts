@@ -3,7 +3,9 @@ import { pipe } from "fp-ts/function";
 import * as P from "parser-ts/Parser";
 import { stream } from "parser-ts/Stream";
 import * as C from "parser-ts/char";
-import { periodChars } from "./shared";
+
+/** 句点として見做す文字の集合。 */
+const periodChars = ".。．" as const;
 
 /**
  * 句点ではない文字を1文字以上連続で消費し、消費した文字列を返す。

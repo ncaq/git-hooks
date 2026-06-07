@@ -1,7 +1,7 @@
 import message from "@commitlint/message";
 import type { SyncRule } from "@commitlint/types";
+import { extractLines } from "./body-punctuation/extract-markdown";
 import { hasNoMidLineComma } from "./body-punctuation/mid-line-comma";
-import { extractLines } from "./body-punctuation/shared";
 
 /**
  * ルール本体。

@@ -3,7 +3,15 @@ import { pipe } from "fp-ts/function";
 import * as P from "parser-ts/Parser";
 import { stream, type Stream } from "parser-ts/Stream";
 import * as C from "parser-ts/char";
-import { commaChars, commaPrefixThreshold } from "./shared";
+
+/** 読点として見做す文字の集合。 */
+const commaChars = ",，、" as const;
+
+/**
+ * 読点を改行強制対象から外す前置文字数の閾値。
+ * 数文字程度の接続詞(`また、`等)は途中の読点でも改行を求めない。
+ */
+const commaPrefixThreshold = 6 as const;
 
 /**
  * 読点ではない文字を1文字以上連続で消費し、消費した文字列を返す。
