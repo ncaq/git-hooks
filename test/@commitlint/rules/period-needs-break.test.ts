@@ -1,10 +1,6 @@
-import { createCommitObject, type Commit } from "conventional-commits-parser";
 import { describe, expect, it } from "vitest";
+import { buildCommit } from "./build-commit";
 import { periodNeedsBreak } from "#commitlint-rules/period-needs-break";
-
-function buildCommit(body: string | null): Commit {
-  return createCommitObject({ header: "feat: x", body });
-}
 
 describe("periodNeedsBreak", () => {
   it("bodyがnullならpassします。", () => {

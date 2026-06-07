@@ -1,10 +1,6 @@
-import { createCommitObject, type Commit } from "conventional-commits-parser";
 import { describe, expect, it } from "vitest";
+import { buildCommit } from "./build-commit";
 import { breakNeedsPunctuation } from "#commitlint-rules/break-needs-punctuation";
-
-function buildCommit(body: string | null): Commit {
-  return createCommitObject({ header: "feat: x", body });
-}
 
 describe("breakNeedsPunctuation", () => {
   it("bodyがnullならpassします。", () => {
