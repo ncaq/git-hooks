@@ -24,7 +24,7 @@
     "@commitlint/lint": "^21.0.2",
     "@commitlint/message": "^21.0.1",
     "@commitlint/types": "^21.0.0",
-    "@effect/cli": "^0.75.1",
+    "@effect/cli": "^0.75.2",
     "@effect/platform": "^0.96.1",
     "@effect/platform-node": "^0.107.0",
     "effect": "^3.21.3",
