@@ -12,8 +12,8 @@
 
   outputs =
     inputs@{
-      flake-parts,
       self,
+      flake-parts,
       treefmt-nix,
       ...
     }:
