@@ -60,6 +60,54 @@ Third line.`;
     expect(valid).toBe(false);
   });
 
+  it("コードネーム内のピリオドは中間句点として扱われません。", () => {
+    const [valid, msg] = periodNeedsBreak(buildCommit("Node.jsのバージョンを更新する。"), "always");
+    expect(msg).toBeUndefined();
+    expect(valid).toBe(true);
+  });
+
+  it("バージョン番号内のピリオドは中間句点として扱われません。", () => {
+    const [valid, msg] = periodNeedsBreak(buildCommit("GHC 9.12に更新する。"), "always");
+    expect(msg).toBeUndefined();
+    expect(valid).toBe(true);
+  });
+
+  it("数値の小数点は中間句点として扱われません。", () => {
+    const [valid, msg] = periodNeedsBreak(buildCommit("処理速度が1.5倍になる。"), "always");
+    expect(msg).toBeUndefined();
+    expect(valid).toBe(true);
+  });
+
+  it("単語内ピリオドが複数あってもpassします。", () => {
+    const [valid, msg] = periodNeedsBreak(
+      buildCommit("Node.jsとGHC 9.12で速度が1.5倍になる。"),
+      "always",
+    );
+    expect(msg).toBeUndefined();
+    expect(valid).toBe(true);
+  });
+
+  it("単語内ピリオドを含む単語で始まる行もpassします。", () => {
+    const [valid, msg] = periodNeedsBreak(buildCommit("1.5倍の速度になる。"), "always");
+    expect(msg).toBeUndefined();
+    expect(valid).toBe(true);
+  });
+
+  it("非ASCII文字に挟まれた半角ピリオドはfailします。", () => {
+    const [valid] = periodNeedsBreak(buildCommit("1文目です.2文目です。"), "always");
+    expect(valid).toBe(false);
+  });
+
+  it("英数字に挟まれていても全角句点はfailします。", () => {
+    const [valid] = periodNeedsBreak(buildCommit("Node。jsを更新する。"), "always");
+    expect(valid).toBe(false);
+  });
+
+  it("ピリオドの後に空白が続く場合はfailします。", () => {
+    const [valid] = periodNeedsBreak(buildCommit("Update Node.js. And more."), "always");
+    expect(valid).toBe(false);
+  });
+
   it("読点が行の途中にあっても句点観点ではpassします。", () => {
     const [valid, msg] = periodNeedsBreak(
       buildCommit("とても長い前置きを書いた後で、続きを書きます。"),

@@ -10,6 +10,8 @@ import { hasMidLinePeriod } from "./body-punctuation/mid-line-period";
  *
  * `when="always"`: 各行は行の途中に句点(`.`/`。`/`．`)を含まないことが要求される。
  * 行末の句点は許容され、中間に句点が現れた時点で違反となる。
+ * ただし`Node.js`のようなコードネームや`9.12`のようなバージョン番号・数値のために、
+ * ASCII英数字に挟まれた半角ピリオドは単語内ピリオドとして許容される。
  * 読点は別ルール`body-comma-needs-break`の担当であり、ここでは無害文字として扱う。
  *
  * 検査対象はmdast上の段落(`paragraph`ノード)に限られる。
