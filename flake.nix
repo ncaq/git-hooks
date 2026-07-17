@@ -117,12 +117,16 @@
 
             postFixup = ''
               for exec in $out/lib/git-hooks/dist/hooks/commit-msg \
-                          $out/lib/git-hooks/dist/hooks/post-merge; do
+                          $out/lib/git-hooks/dist/hooks/post-checkout \
+                          $out/lib/git-hooks/dist/hooks/post-commit \
+                          $out/lib/git-hooks/dist/hooks/post-merge \
+                          $out/lib/git-hooks/dist/hooks/pre-push; do
                 wrapProgram "$exec" --prefix PATH : ${
                   lib.makeBinPath (
                     with pkgs;
                     [
                       git
+                      git-lfs
                       nodejs
                     ]
                   )

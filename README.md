@@ -32,4 +32,23 @@ home-managerのmodulesとして有効化します。
 ## 含まれるhooks
 
 - `commit-msg`: [commitlint](https://commitlint.js.org/)によるコミットメッセージの検証
-- `post-merge`: マージ済みブランチの自動削除
+- `post-checkout`: `git lfs post-checkout`への委譲
+- `post-commit`: `git lfs post-commit`への委譲
+- `post-merge`: `git lfs post-merge`への委譲とマージ済みブランチの自動削除
+- `pre-push`: `git lfs pre-push`への委譲
+
+## Git LFSとの関係
+
+`core.hooksPath`を共通hooksへ固定すると、
+`git lfs install`が`.git/hooks`へ設置するhooksは実行されなくなります。
+その代わりに上記のhooksが同名の`git lfs`サブコマンドへ委譲することで、
+LFSを使うリポジトリでも通常通り動作します。
+hooksは`git-lfs`をPATHに含めてラップされているため、
+利用側で別途git-lfsをインストールする必要はありません。
+
+LFSを使わないリポジトリでは`git lfs`のhookサブコマンドは即座に何もせず終了するので、
+リポジトリごとの設定は不要です。
+
+なお`git lfs install`が行うもう1つの仕事である`filter.lfs.*`の設定は、
+このリポジトリの管轄外です。
+home-managerでは`programs.git.lfs.enable = true;`を設定してください。

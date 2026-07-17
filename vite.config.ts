@@ -17,7 +17,10 @@ const { rootDir, inputs } = Effect.runSync(
       rootDir,
       inputs: {
         "commit-msg": path.join(rootDir, "src/hooks/commit-msg.ts"),
+        "post-checkout": path.join(rootDir, "src/hooks/post-checkout.ts"),
+        "post-commit": path.join(rootDir, "src/hooks/post-commit.ts"),
         "post-merge": path.join(rootDir, "src/hooks/post-merge.ts"),
+        "pre-push": path.join(rootDir, "src/hooks/pre-push.ts"),
       },
     };
   }).pipe(Effect.provide(NodeContext.layer)),
