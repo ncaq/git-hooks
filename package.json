@@ -35,7 +35,7 @@
     "parser-ts": "^0.7.0"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.86.4",
+    "@effect/language-service": "^0.86.6",
     "@eslint/js": "^10.0.1",
     "@types/mdast": "^4.0.4",
     "@types/node": "^22.20.1",
