@@ -84,12 +84,17 @@
               {
                 nativeBuildInputs = with pkgs; [
                   git # testで必要。
+                  importNpmLock.hooks.linkNodeModulesHook # node_modulesの配置に必要。
                   nodejs # 全体の実行に必要。
                 ];
+                npmDeps = nodeModules;
               }
               ''
                 cp -r ${tsRoot}/. .
-                ln -s ${nodeModules}/node_modules node_modules
+                # vitestはnode_modules/.vitest-cacheなどに書き込むため、
+                # node_modules自体をストアへのリンクにするのではなく、
+                # devShellと同じく書き込み可能なディレクトリを作って中身をリンクする。
+                linkNodeModulesHook
                 npm run ${script}
                 touch $out
               '';
