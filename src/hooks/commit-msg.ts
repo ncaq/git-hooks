@@ -1,10 +1,9 @@
-import { argv, stderr } from "node:process";
+import { stderr } from "node:process";
 import format from "@commitlint/format";
 import lintFn from "@commitlint/lint";
-import { Args, Command } from "@effect/cli";
-import { FileSystem } from "@effect/platform";
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Console, Data, Effect, Match } from "effect";
+import { NodeRuntime, NodeServices } from "@effect/platform-node";
+import { Console, Data, Effect, FileSystem, Match } from "effect";
+import { Argument, Command } from "effect/cli";
 import { lintOptions, rules } from "#commitlint/config";
 
 /** ユーザーへ表示すべきメッセージ付きで失敗する場合のエラー。 */
@@ -19,8 +18,8 @@ class LintReportedErrors extends Data.TaggedError("LintReportedErrors") {}
 /** lintの戻り値型。直接利用できる型エクスポートが無いため`Awaited`で取り出す。 */
 type LintOutcome = Awaited<ReturnType<typeof lintFn>>;
 
-/** コミットメッセージファイルへのパスを表す位置引数。存在検証は`@effect/cli`に委ねる。 */
-const editmsgFileArg = Args.file({ name: "commit-msg-file", exists: "yes" });
+/** コミットメッセージファイルへのパスを表す位置引数。存在検証は`effect/cli`に委ねる。 */
+const editmsgFileArg = Argument.File("commit-msg-file", { mustExist: true });
 
 /** commitlintを呼び出し、構造化したエラーで投げ直す。 */
 const runLint = (message: string): Effect.Effect<LintOutcome, CommitMsgFailure> =>
@@ -47,7 +46,7 @@ const reportOutcome = (outcome: LintOutcome): Effect.Effect<void, LintReportedEr
     Effect.flatMap(() => (0 < outcome.errors.length ? new LintReportedErrors() : Effect.void)),
   );
 
-/** `@effect/cli`の引数パース後に呼ばれるハンドラ本体。 */
+/** `effect/cli`の引数パース後に呼ばれるハンドラ本体。 */
 const handle = ({
   file,
 }: {
@@ -74,7 +73,11 @@ const handle = ({
 /** commit-msgフック本体のCLI定義。 */
 const command = Command.make("commit-msg", { file: editmsgFileArg }, handle);
 
-/** `argv`を受け取って起動するCLI実行関数。 */
-const cli = Command.run(command, { name: "commit-msg", version: "0.0.0" });
-
-NodeRuntime.runMain(cli(argv).pipe(Effect.provide(NodeContext.layer)));
+/**
+ * CLIを起動する。
+ * コマンドライン引数は`Stdio`サービス経由で`process.argv`から取得される。
+ */
+Command.run(command, { version: "0.0.0" }).pipe(
+  Effect.provide(NodeServices.layer),
+  NodeRuntime.runMain,
+);
