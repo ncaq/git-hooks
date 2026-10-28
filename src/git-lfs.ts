@@ -1,5 +1,5 @@
-import { Command, CommandExecutor, Error as PlatformError } from "@effect/platform";
-import { Data, Effect } from "effect";
+import { Data, Effect, type PlatformError } from "effect";
+import { ChildProcess, ChildProcessSpawner } from "effect/process";
 
 /**
  * `git lfs`サブコマンドの起動・実行自体が`PlatformError`で失敗した場合のエラー。
@@ -48,18 +48,19 @@ export type GitLfsHookName = "post-checkout" | "post-commit" | "post-merge" | "p
 export const delegateToGitLfs = (
   hook: GitLfsHookName,
   forwarded: readonly string[],
-): Effect.Effect<void, GitLfsHookError, CommandExecutor.CommandExecutor> =>
+): Effect.Effect<void, GitLfsHookError, ChildProcessSpawner.ChildProcessSpawner> =>
   Effect.gen(function* () {
+    const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
     const args = ["lfs", hook, ...forwarded];
-    const cmd = Command.make("git", ...args).pipe(
-      Command.stdin("inherit"),
-      Command.stdout("inherit"),
-      Command.stderr("inherit"),
-    );
-    const code = yield* Command.exitCode(cmd).pipe(
-      Effect.mapError((cause) => new GitLfsCommandFailure({ args, cause })),
-    );
-    if (code !== 0) {
+    const cmd = ChildProcess.make("git", args, {
+      stdin: "inherit",
+      stdout: "inherit",
+      stderr: "inherit",
+    });
+    const code = yield* spawner
+      .exitCode(cmd)
+      .pipe(Effect.mapError((cause) => new GitLfsCommandFailure({ args, cause })));
+    if (code !== ChildProcessSpawner.ExitCode(0)) {
       return yield* new GitLfsNonZeroExit({ args, exitCode: code });
     }
   });

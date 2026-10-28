@@ -1,6 +1,5 @@
-import { FileSystem, Path } from "@effect/platform";
-import { NodeContext } from "@effect/platform-node";
-import { Effect } from "effect";
+import { NodeServices } from "@effect/platform-node";
+import { Effect, FileSystem, Path } from "effect";
 import type { Plugin } from "vite";
 import { configDefaults, defineConfig } from "vitest/config";
 
@@ -23,7 +22,7 @@ const { rootDir, inputs } = Effect.runSync(
         "pre-push": path.join(rootDir, "src/hooks/pre-push.ts"),
       },
     };
-  }).pipe(Effect.provide(NodeContext.layer)),
+  }).pipe(Effect.provide(NodeServices.layer)),
 );
 
 /**
@@ -44,7 +43,7 @@ const chmodEntryPlugin: Plugin = {
         (chunk) => fs.chmod(path.join(outDir, chunk.fileName), 0o755),
         { concurrency: "unbounded", discard: true },
       );
-    }).pipe(Effect.provide(NodeContext.layer));
+    }).pipe(Effect.provide(NodeServices.layer));
     return Effect.runPromise(program);
   },
 };

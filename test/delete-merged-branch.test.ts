@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { chdir, cwd } from "node:process";
-import { NodeContext } from "@effect/platform-node";
+import { NodeServices } from "@effect/platform-node";
 import { Effect, Exit } from "effect";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
@@ -58,9 +58,9 @@ const localBranches = (work: string): readonly string[] =>
     .filter((line) => 0 < line.length)
     .sort();
 
-/** Effectを実行する補助。`NodeContext`を提供する。 */
+/** Effectを実行する補助。`NodeServices`を提供する。 */
 const run = (): Promise<void> =>
-  Effect.runPromise(deleteMergedBranch.pipe(Effect.provide(NodeContext.layer)));
+  Effect.runPromise(deleteMergedBranch.pipe(Effect.provide(NodeServices.layer)));
 
 describe("deleteMergedBranch", () => {
   let root: string;
@@ -120,7 +120,7 @@ describe("deleteMergedBranch", () => {
     expect(localBranches(work)).toEqual(["feat-unmerged", "master"]);
 
     const exit = await Effect.runPromiseExit(
-      deleteMergedBranch.pipe(Effect.provide(NodeContext.layer)),
+      deleteMergedBranch.pipe(Effect.provide(NodeServices.layer)),
     );
     expect(Exit.isSuccess(exit)).toBe(true);
 

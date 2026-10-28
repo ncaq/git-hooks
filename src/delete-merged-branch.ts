@@ -1,5 +1,5 @@
-import { Command, CommandExecutor, Error as PlatformError } from "@effect/platform";
-import { Data, Effect, Either, Option } from "effect";
+import { Data, Effect, Option, type PlatformError } from "effect";
+import { ChildProcess, ChildProcessSpawner } from "effect/process";
 
 /**
  * `git`サブコマンドの起動・実行自体が`PlatformError`で失敗した場合のエラー。
@@ -42,8 +42,11 @@ export class LsRemoteParseFailure extends Data.TaggedError("LsRemoteParseFailure
 export type DeleteMergedBranchError = GitCommandFailure | GitNonZeroExit | LsRemoteParseFailure;
 
 /** `git`サブコマンド呼び出しを生成する小さなヘルパ。 */
-function git(...args: readonly string[]): Command.Command {
-  return Command.make("git", ...args);
+function git(
+  args: readonly string[],
+  options?: ChildProcess.CommandOptions,
+): ChildProcess.StandardCommand {
+  return ChildProcess.make("git", args, options);
 }
 
 /** `PlatformError`を`GitCommandFailure`に包み直す`Effect.mapError`用ヘルパ。 */
@@ -55,17 +58,24 @@ const toGitCommandFailure =
 /** stdoutを文字列として取得する`git`呼び出し。 */
 const gitText = (
   ...args: readonly string[]
-): Effect.Effect<string, GitCommandFailure, CommandExecutor.CommandExecutor> =>
-  Command.string(git(...args)).pipe(Effect.mapError(toGitCommandFailure(args)));
+): Effect.Effect<string, GitCommandFailure, ChildProcessSpawner.ChildProcessSpawner> =>
+  ChildProcessSpawner.ChildProcessSpawner.use((spawner) => spawner.string(git(args))).pipe(
+    Effect.mapError(toGitCommandFailure(args)),
+  );
 
 /** stdout/stderrを継承する`git`呼び出し。終了コードが非0なら`GitNonZeroExit`で失敗にする。 */
 const gitInherit = (
   ...args: readonly string[]
-): Effect.Effect<void, GitCommandFailure | GitNonZeroExit, CommandExecutor.CommandExecutor> =>
+): Effect.Effect<
+  void,
+  GitCommandFailure | GitNonZeroExit,
+  ChildProcessSpawner.ChildProcessSpawner
+> =>
   Effect.gen(function* () {
-    const cmd = git(...args).pipe(Command.stdout("inherit"), Command.stderr("inherit"));
-    const code = yield* Command.exitCode(cmd).pipe(Effect.mapError(toGitCommandFailure(args)));
-    if (code !== 0) {
+    const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
+    const cmd = git(args, { stdout: "inherit", stderr: "inherit" });
+    const code = yield* spawner.exitCode(cmd).pipe(Effect.mapError(toGitCommandFailure(args)));
+    if (code !== ChildProcessSpawner.ExitCode(0)) {
       return yield* new GitNonZeroExit({ args, exitCode: code });
     }
   });
@@ -78,32 +88,34 @@ const gitInherit = (
  * <sha>\tHEAD
  * ```
  *
- * 各段階で発生し得る`null`/`undefined`は`Option.flatMapNullable`が`None`に畳み込み、
- * 最後に`Either.fromOption`で`None`を`LsRemoteParseFailure`へ写すことで失敗チャネルへ載せる。
+ * 各段階で発生し得る`null`/`undefined`は`Option.flatMapNullishOr`が`None`に畳み込み、
+ * 最後に`Effect.fromOption`で`None`を`LsRemoteParseFailure`へ写すことで失敗チャネルへ載せる。
  */
 const parseDefaultBranchFromLsRemote = (
   output: string,
 ): Effect.Effect<string, LsRemoteParseFailure> =>
-  Option.fromNullable(output.split("\n").find((line) => line.startsWith("ref:"))).pipe(
-    Option.flatMapNullable((refLine) => /^ref:\s+refs\/heads\/(\S+)/.exec(refLine)),
-    Option.flatMapNullable((match) => match[1]),
-    Either.fromOption(() => new LsRemoteParseFailure({ output })),
+  Option.fromNullishOr(output.split("\n").find((line) => line.startsWith("ref:"))).pipe(
+    Option.flatMapNullishOr((refLine) => /^ref:\s+refs\/heads\/(\S+)/.exec(refLine)),
+    Option.flatMapNullishOr((match) => match[1]),
+    Effect.fromOption(() => new LsRemoteParseFailure({ output })),
   );
 
 /**
  * `refs/remotes/origin/HEAD`がローカルに設定されているかを終了コードで判定する。
- * `Command.string`は終了コードを検査しないため、この事前チェックを別建てで行う。
- * stderrへ書かれる致命的メッセージは表示しないようパイプで吸収する。
+ * `spawner.string`は終了コードを検査しないため、この事前チェックを別建てで行う。
+ * stderrへ書かれる致命的メッセージは表示しないよう捨てる。
  */
 const localOriginHeadExists: Effect.Effect<
   boolean,
   GitCommandFailure,
-  CommandExecutor.CommandExecutor
+  ChildProcessSpawner.ChildProcessSpawner
 > = Effect.suspend(() => {
   const args = ["symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"] as const;
-  return Command.exitCode(git(...args).pipe(Command.stderr("pipe"))).pipe(
+  return ChildProcessSpawner.ChildProcessSpawner.use((spawner) =>
+    spawner.exitCode(git(args, { stderr: "ignore" })),
+  ).pipe(
     Effect.mapError(toGitCommandFailure(args)),
-    Effect.map((code) => code === 0),
+    Effect.map((code) => code === ChildProcessSpawner.ExitCode(0)),
   );
 });
 
@@ -115,7 +127,7 @@ const localOriginHeadExists: Effect.Effect<
 const detectDefaultBranch: Effect.Effect<
   string,
   GitCommandFailure | LsRemoteParseFailure,
-  CommandExecutor.CommandExecutor
+  ChildProcessSpawner.ChildProcessSpawner
 > = Effect.gen(function* () {
   const exists = yield* localOriginHeadExists;
   if (exists) {
@@ -127,8 +139,11 @@ const detectDefaultBranch: Effect.Effect<
 });
 
 /** 現在のブランチ名を取得する。detached HEADでは`HEAD`が返る。 */
-const currentBranch: Effect.Effect<string, GitCommandFailure, CommandExecutor.CommandExecutor> =
-  gitText("rev-parse", "--abbrev-ref", "HEAD").pipe(Effect.map((out) => out.trim()));
+const currentBranch: Effect.Effect<
+  string,
+  GitCommandFailure,
+  ChildProcessSpawner.ChildProcessSpawner
+> = gitText("rev-parse", "--abbrev-ref", "HEAD").pipe(Effect.map((out) => out.trim()));
 
 /**
  * HEADにマージ済みのローカルブランチ名を取得する。
@@ -138,7 +153,7 @@ const currentBranch: Effect.Effect<string, GitCommandFailure, CommandExecutor.Co
 const mergedBranches: Effect.Effect<
   readonly string[],
   GitCommandFailure,
-  CommandExecutor.CommandExecutor
+  ChildProcessSpawner.ChildProcessSpawner
 > = gitText("for-each-ref", "--merged=HEAD", "--format=%(refname:short)", "refs/heads/").pipe(
   Effect.map((out) =>
     out
@@ -156,7 +171,7 @@ const mergedBranches: Effect.Effect<
 export const deleteMergedBranch: Effect.Effect<
   void,
   DeleteMergedBranchError,
-  CommandExecutor.CommandExecutor
+  ChildProcessSpawner.ChildProcessSpawner
 > = Effect.gen(function* () {
   const defaultBranch = yield* detectDefaultBranch;
   const current = yield* currentBranch;

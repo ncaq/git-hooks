@@ -2,7 +2,7 @@ import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { env } from "node:process";
-import { NodeContext } from "@effect/platform-node";
+import { NodeServices } from "@effect/platform-node";
 import { Cause, Effect, Exit } from "effect";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { delegateToGitLfs, GitLfsNonZeroExit, type GitLfsHookName } from "../src/git-lfs";
@@ -32,9 +32,9 @@ const recordedArgs = (recordFile: string): readonly string[] =>
     .split("\n")
     .filter((line) => 0 < line.length);
 
-/** Effectを実行する補助。`NodeContext`を提供する。 */
+/** Effectを実行する補助。`NodeServices`を提供する。 */
 const run = (hook: GitLfsHookName, args: readonly string[]): Promise<Exit.Exit<void, unknown>> =>
-  Effect.runPromiseExit(delegateToGitLfs(hook, args).pipe(Effect.provide(NodeContext.layer)));
+  Effect.runPromiseExit(delegateToGitLfs(hook, args).pipe(Effect.provide(NodeServices.layer)));
 
 describe("delegateToGitLfs", () => {
   let root: string;
@@ -79,7 +79,7 @@ describe("delegateToGitLfs", () => {
     const exit = await run("post-checkout", ["0000", "ffff", "1"]);
     expect(Exit.isFailure(exit)).toBe(true);
     if (Exit.isFailure(exit)) {
-      const failure = Cause.failureOption(exit.cause);
+      const failure = Cause.findErrorOption(exit.cause);
       expect(failure._tag).toBe("Some");
       if (failure._tag === "Some") {
         expect(failure.value).toBeInstanceOf(GitLfsNonZeroExit);
